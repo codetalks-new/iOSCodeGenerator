@@ -68,8 +68,10 @@ def main():
     stmts = []
     dict_stmts = []
 
+    comments = []
     for line in sys.stdin:
         if line:
+            comments.append("// "+line)
             declare_list, stmt_list, dict_stmts = parse_line(line)
             declares.extend(declare_list)
             stmts.extend(stmt_list)
@@ -77,8 +79,11 @@ def main():
     declare_stmts = '\n'.join(declares)
     init_func_stmts = '\n'.join(stmts)
     to_dict_stmts = '\n'.join(dict_stmts)
+    comment_stmts = '\n'.join(comments)
 
     model_class_tpl = Template("""
+// Model Class Generated from templates
+$comment_stmts
 class MyModel {
     $declare_stmts
 
@@ -95,10 +100,12 @@ class MyModel {
 }
     """)
 
-    model_class_stmt = model_class_tpl.substitute(declare_stmts=declare_stmts,
-                                                  init_func_stmts=init_func_stmts,
-                                                  to_dict_stmts=to_dict_stmts
-                                                  )
+    model_class_stmt = model_class_tpl.substitute(
+        comment_stmts=comment_stmts,
+        declare_stmts=declare_stmts,
+        init_func_stmts=init_func_stmts,
+        to_dict_stmts=to_dict_stmts
+        )
 
     sys.stdout.write(model_class_stmt)
 
