@@ -9,15 +9,28 @@ char_type_map = {
     's': 'String',
     'i': 'Int',
     'f': 'Double',
+    'd': 'Double',
     'b': 'Bool',
+    'r': 'Ref',
     'di': 'NSDate',
     'ds': 'NSDate',
+    '[s': 'Array',
+    '[i': 'Array',
+    '[f': 'Array',
+    '[d': 'Array',
+    '[b': 'Array',
 }
+
+
+def _field_name_to_type_name(field_name):
+    words = re.split('_', field_name)
+    return ''.join([word.capitalize() for word in words if word])
 
 
 def parse_field_info(field_info):
     parts = re.split(':', field_info.strip())
     fname = parts[0]
+    fname = fname.replace('-','_')
     ftype = None
     if len(parts) > 1:
         ftype = parts[1]
@@ -25,24 +38,35 @@ def parse_field_info(field_info):
         ftype = 's'
     type_class = char_type_map.get(ftype, 'String')
     declare = '    let {fname}:{type_class} '.format(fname=fname, type_class=type_class)
+    dict_stmt = '   dict["{fname}"] = self.{fname}'.format(fname=fname)
     stmt = None
-    dict_stmt = None
     if len(ftype) == 1:
-        json_type = type_class.lower()
-        stmt = '    self.{fname} = json["{fname}"].{json_type}Value'.format(fname=fname, json_type=json_type)
-        dict_stmt = '   dict["{fname}"] = self.{fname}'.format(fname=fname)
+        if ftype == 'r':
+            type_name = _field_name_to_type_name(fname)
+            declare = '    let {fname}:{type_class} '.format(fname=fname, type_class=type_name)
+            stmt = ' self.{fname} = {type_name}(json:json["{fname}"])'.format(fname=fname, type_name=type_name)
+            dict_stmt = 'dict["{fname}"] = self.{fname}.toDict()'.format(fname=fname)
+        else:
+            json_type = type_class.lower()
+            stmt = '    self.{fname} = json["{fname}"].{json_type}Value'.format(fname=fname, json_type=json_type)
     elif len(ftype) == 2:
-        tmp_value_stmt_tpl = '  let tmp_{fname}_value = json["{fname}"].{json_type}Value '
+        type_complex = ftype[0]
         type_char = ftype[1]
         raw_type_class = char_type_map.get(type_char, 'String')
-        json_type = raw_type_class.lower()
-        tmp_value_stmt = tmp_value_stmt_tpl.format(fname=fname, json_type=json_type)
-        if ftype == 'di':
-            field_value_stmt = '    self.{fname} = NSDate(timeIntervalSince1970: tmp_{fname}_value)'.format(fname=fname)
-            stmt = '\n'.join([tmp_value_stmt, field_value_stmt])
-            dict_stmt = '   dict["{fname}"] = self.{fname}.timeIntervalSince1970 '.format(fname=fname)
-        elif ftype == 'ds':
-            pass
+        if type_complex == '[':
+            declare = ' let {fname}:[{type_class}]'.format(fname=fname,type_class=raw_type_class)
+            stmt = '    self.{fname} = json["{fname}"].arrayObject as? [{type_class}] ?? []'\
+                .format(fname=fname, type_class=raw_type_class)
+        elif type_complex == 'd':
+            tmp_value_stmt_tpl = '  let tmp_{fname}_value = json["{fname}"].{json_type}Value '
+            json_type = raw_type_class.lower()
+            tmp_value_stmt = tmp_value_stmt_tpl.format(fname=fname, json_type=json_type)
+            if ftype == 'di':
+                field_value_stmt = '    self.{fname} = NSDate(timeIntervalSince1970: tmp_{fname}_value)'.format(fname=fname)
+                stmt = '\n'.join([tmp_value_stmt, field_value_stmt])
+                dict_stmt = '   dict["{fname}"] = self.{fname}.timeIntervalSince1970 '.format(fname=fname)
+            elif ftype == 'ds':
+                pass
     return declare, stmt, dict_stmt
 
 
@@ -72,10 +96,10 @@ def main():
     for line in sys.stdin:
         if line:
             comments.append("// "+line)
-            declare_list, stmt_list, dict_stmts = parse_line(line)
+            declare_list, stmt_list, dict_stmt_list = parse_line(line)
             declares.extend(declare_list)
             stmts.extend(stmt_list)
-            dict_stmts.extend(dict_stmts)
+            dict_stmts.extend(dict_stmt_list)
     declare_stmts = '\n'.join(declares)
     init_func_stmts = '\n'.join(stmts)
     to_dict_stmts = '\n'.join(dict_stmts)
