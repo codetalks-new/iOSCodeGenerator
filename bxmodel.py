@@ -30,7 +30,7 @@ def _field_name_to_type_name(field_name):
 def parse_field_info(field_info):
     parts = re.split(':', field_info.strip())
     fname = parts[0]
-    fname = fname.replace('-','_')
+    fname = fname.replace('-', '_').replace('"', '')
     ftype = None
     if len(parts) > 1:
         ftype = parts[1]
