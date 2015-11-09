@@ -59,7 +59,7 @@ def parse_field_info(field_info):
                 .format(fname=fname, type_class=raw_type_class)
         elif type_complex == 'd':
             tmp_value_stmt_tpl = '  let tmp_{fname}_value = json["{fname}"].{json_type}Value '
-            json_type = raw_type_class.lower()
+            json_type = "double"
             tmp_value_stmt = tmp_value_stmt_tpl.format(fname=fname, json_type=json_type)
             if ftype == 'di':
                 field_value_stmt = '    self.{fname} = NSDate(timeIntervalSince1970: tmp_{fname}_value)'.format(fname=fname)
