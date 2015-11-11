@@ -106,6 +106,8 @@ def main():
     comment_stmts = '\n'.join(comments)
 
     model_class_tpl = Template("""
+import SwiftyJSON
+
 // Model Class Generated from templates
 $comment_stmts
 class MyModel {
