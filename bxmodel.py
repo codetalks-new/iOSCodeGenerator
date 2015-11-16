@@ -75,8 +75,13 @@ def parse_line(line):
     stmts = []
     declares = []
     dict_stmts = []
+    model_name = None
     for field_info in field_infos:
+        field_info = field_info.strip()
         if not field_info:
+            continue
+        if field_info.startswith('-'):
+            model_name = field_info[1:]
             continue
         declare, stmt, dict_stmt = parse_field_info(field_info)
         if declare and stmt and dict_stmt:
@@ -84,7 +89,7 @@ def parse_line(line):
             stmts.append(stmt)
             dict_stmts.append(dict_stmt)
 
-    return declares, stmts, dict_stmts
+    return declares, stmts, dict_stmts,model_name
 
 
 def main():
@@ -93,10 +98,14 @@ def main():
     dict_stmts = []
 
     comments = []
+    last_model_name = 'MyModel'
     for line in sys.stdin:
+        line = line.strip()
         if line:
             comments.append("// "+line)
-            declare_list, stmt_list, dict_stmt_list = parse_line(line)
+            declare_list, stmt_list, dict_stmt_list, model_name = parse_line(line)
+            if model_name:
+                last_model_name = model_name
             declares.extend(declare_list)
             stmts.extend(stmt_list)
             dict_stmts.extend(dict_stmt_list)
@@ -107,13 +116,13 @@ def main():
 
     model_class_tpl = Template("""
 import SwiftyJSON
-
+import BXModel
 // Model Class Generated from templates
 $comment_stmts
-class MyModel {
+class $model_name:BXModel {
     $declare_stmts
 
-    init(json:JSON){
+    required init(json:JSON){
         $init_func_stmts
     }
 
@@ -127,6 +136,7 @@ class MyModel {
     """)
 
     model_class_stmt = model_class_tpl.substitute(
+        model_name=last_model_name,
         comment_stmts=comment_stmts,
         declare_stmts=declare_stmts,
         init_func_stmts=init_func_stmts,

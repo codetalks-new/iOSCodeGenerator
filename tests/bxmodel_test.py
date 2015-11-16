@@ -8,7 +8,7 @@ from io import StringIO
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
-        strio = StringIO(u"id:i,title,author:r,counts:[i,created:di,realname\n")
+        strio = StringIO(u"-User,id:i,title,author:r,counts:[i,created:di,realname\n")
         sys.stdin = strio
         bxmodel.main()
 
