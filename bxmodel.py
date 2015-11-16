@@ -11,6 +11,7 @@ char_type_map = {
     'f': 'Double',
     'd': 'Double',
     'b': 'Bool',
+    'u': 'NSURL',
     'r': 'Ref',
     'di': 'NSDate',
     'ds': 'NSDate',
@@ -46,6 +47,10 @@ def parse_field_info(field_info):
             declare = '    let {fname}:{type_class} '.format(fname=fname, type_class=type_name)
             stmt = ' self.{fname} = {type_name}(json:json["{fname}"])'.format(fname=fname, type_name=type_name)
             dict_stmt = 'dict["{fname}"] = self.{fname}.toDict()'.format(fname=fname)
+        elif ftype == 'u':
+            # NSURL
+            stmt = '    self.{fname} = NSURL(string:json["{fname}"].stringValue)!'.format(fname=fname)
+            dict_stmt = 'dict["{fname}"] = self.{fname}.absoluteString'.format(fname=fname)
         else:
             json_type = type_class.lower()
             stmt = '    self.{fname} = json["{fname}"].{json_type}Value'.format(fname=fname, json_type=json_type)
