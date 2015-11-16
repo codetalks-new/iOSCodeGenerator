@@ -173,6 +173,9 @@ def parse_line(line):
 
 
 uimode_tpl = '''
+{% for comment in comments %}
+  {{ comment }}
+{% endfor %}
 class {{ model.name }} : {{model.superclass}} {
 {% for field in uifields %}
     {{ field.declare_stmt }}
@@ -217,7 +220,7 @@ def main():
                 uifield_list.extend(uifields)
     template = Template(uimode_tpl,trim_blocks=True,lstrip_blocks=True)
     childViews = ','.join([f.field_name for f in uifield_list])
-    text = template.render(model=last_model_decl, uifields=uifield_list, childViews=childViews)
+    text = template.render(model=last_model_decl, uifields=uifield_list, childViews=childViews, comments=comments)
     print(text)
 
 if __name__ == '__main__':
