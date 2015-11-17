@@ -11,7 +11,8 @@ char_type_map = {
     'v': 'UIView',
     'i': 'UIImageView',
     'f': 'UITextField',
-    't': 'UITextView',
+    't': 'UITableView',
+    'c': 'UICollectionView',
     'pc': 'UIPageControl',
     'dp': 'UIDatePicker',
     'st': 'UIStepper',
@@ -19,6 +20,13 @@ char_type_map = {
     'sl': 'UISlide',
     'sc': 'UISegmentedControl',
 }
+
+view_designed_init_map = {
+    'b': 'UIButton(type:.System)',
+    'c': ' UICollectionView(frame: CGRectZero, collectionViewLayout: UICollectionViewFlowLayout())',
+    't': ''
+}
+
 model_type_map = {
     'v': 'UIView',
     't': 'UITableViewCell',
@@ -87,13 +95,6 @@ def _field_name_to_type_name(field_name):
     return ''.join([word.capitalize() for word in words if word])
 
 
-def create_construct_exp(type_class):
-    if type_class == 'UIButton':
-        return 'UIButton(type:.System)'
-    else:
-        return '{type_class}(frame:CGRectZero)'.format(type_class=type_class)
-
-
 class UIField(object):
     def __init__(self, name, ftype, constraints, attrs):
         type_class = char_type_map.get(ftype, 'UILabel')
@@ -107,7 +108,8 @@ class UIField(object):
 
     @property
     def declare_stmt(self):
-        construct_exp = create_construct_exp(self.type_class)
+        frame_init = '{type_class}(frame:CGRectZero)'.format(type_class=self.type_class)
+        construct_exp = view_designed_init_map.get(self.ftype, frame_init)
         return ' let {field_name} = {construct_exp}'.format(field_name=self.field_name, construct_exp=construct_exp)
 
     @property
@@ -121,7 +123,7 @@ class UIField(object):
             if func_name:
                 stmt = '{field_name}.{func_name}({value})'.format(field_name=self.field_name,
                                                                   func_name=func_name,
-                                                                  value=item.ctype)
+                                                                  value=item.value)
                 c_stmts.append(stmt)
         return '\n'.join(c_stmts)
 
@@ -153,9 +155,9 @@ class UIField(object):
                 ctx['value'] = item.value
                 if self.ftype == 'b':
                     # UIButton
-                    stmt = '{field_name}.setTitleColor({func_name}(value), forState: .Normal)' .format(**ctx)
+                    stmt = '{field_name}.setTitleColor({func_name}({value}), forState: .Normal)' .format(**ctx)
                 else:
-                    stmt = '{field_name}.{prop_name} = {func_name}(value)'.format(**ctx)
+                    stmt = '{field_name}.{prop_name} = {func_name}({value})'.format(**ctx)
             stmts.append(stmt)
 
         return '\n'.join(stmts)
@@ -230,6 +232,7 @@ def parse_line(line):
 
 
 uimode_tpl = '''
+import UIKit
 {% for comment in comments %}
   {{ comment }}
 {% endfor %}
