@@ -49,6 +49,11 @@ field_pin_map = {
 
 }
 
+vc_pin_map = {
+    't': 'pinTopLayoutGuide',
+    'b': 'pinBottomLayoutGuide'
+}
+
 field_attr_map = {
     'f': 'UIFont.systemFontOfSize',
     'fb': 'UIFont.boldSystemFontOfSize',
@@ -216,8 +221,9 @@ class UIField(object):
         self.field_name = "{name}{type_name}".format(name=name, type_name=pure_type_name)
         self.name = name
         self.type_class = type_class
-        self.constraints = constraints
-        self.attrs = attrs
+        self.constraints = dict((item.ctype, item.value) for item in constraints)
+        self.attrs = dict((item.ctype, item.value) for item in attrs)
+        self.in_vc = False
 
     @property
     def declare_stmt(self):
@@ -230,13 +236,16 @@ class UIField(object):
         if not self.constraints:
             return ''
         c_stmts = []
-        for c in self.constraints:
-            item = parse_field_config_item(c)
-            func_name = field_pin_map.get(item.ctype)
+
+        for ctype, value in self.constraints.iteritems():
+            func_name = field_pin_map.get(ctype)
             if func_name:
-                stmt = '{field_name}.{func_name}({value})'.format(field_name=self.field_name,
-                                                                  func_name=func_name,
-                                                                  value=item.value)
+                if self.in_vc and (ctype in vc_pin_map):
+                    ctx = dict(func_name=vc_pin_map[ctype], view=self.field_name)
+                    stmt = '{func_name}({view})'.format(**ctx)
+                else:
+                    ctx = dict(field_name=self.field_name, func_name=func_name, value=value)
+                    stmt = '{field_name}.{func_name}({value})'.format(**ctx)
                 c_stmts.append(stmt)
         return '\n'.join(c_stmts)
 
@@ -245,15 +254,14 @@ class UIField(object):
         if not self.attrs:
             return ''
         stmts = []
-        for attr in self.attrs:
-            item = parse_field_config_item(attr)
-            func_name = field_attr_map.get(item.ctype)
+        for ctype,value in self.attrs.iteritems():
+            func_name = field_attr_map.get(ctype)
             if not func_name:
                 continue
             no_param = func_name.startswith('+')
             if no_param:
                 func_name = func_name.replace('+', '')
-            prop_name = 'font' if item.ctype.startswith('f') else 'textColor'
+            prop_name = 'font' if ctype.startswith('f') else 'textColor'
             if self.ftype == 'v':
                 # UIView
                 prop_name = 'backgroundColor'
@@ -265,7 +273,7 @@ class UIField(object):
                 else:
                     stmt = '{field_name}.{prop_name} = {func_name}'.format(**ctx)
             else:
-                ctx['value'] = item.value
+                ctx['value'] = value
                 if self.ftype == 'b':
                     # UIButton
                     stmt = '{field_name}.setTitleColor({func_name}({value}), forState: .Normal)' .format(**ctx)
@@ -280,6 +288,9 @@ field_pattern = re.compile(r'(?P<fname>\w+)(?:\[(?P<constraints>[\w,]+)\])?(?:\(
 model_pattern = re.compile(r'(?P<name>\w+)(?:\((?P<attrs>[\w=,]+)\))?')
 int_value_pattern = re.compile(r'(?P<value>\d+)')
 
+def parse_field_config(config):
+    pairs = config.split(',') if config else []
+    return [parse_field_config_item(pair) for pair in pairs]
 
 def parse_field_info(field_info):
     parts = re.split(':', field_info.strip())
@@ -289,9 +300,9 @@ def parse_field_info(field_info):
     groupdict = matcher.groupdict()
     fname = groupdict.get('fname').replace('-', '_')
     constraints_config = groupdict.get('constraints')
-    constraints = constraints_config.split(',') if constraints_config else []
+    constraints = parse_field_config(constraints_config)
     attrs_config = groupdict.get('attrs')
-    attrs = attrs_config.split(',') if attrs_config else []
+    attrs = parse_field_config(attrs_config)
 
     ftype = None
     if len(parts) > 1:
@@ -338,17 +349,22 @@ def parse_model_name(model_info):
 
 def parse_line(line):
     field_infos = re.split(r';', line)
+
     model_decl = None
+    if line.startswith('-'):
+        field_info = field_infos.pop(0)
+        if field_info.startswith('-'):
+            model_decl = parse_model_name(field_info)
     uifields = []
     for field_info in field_infos:
         field_info = field_info.strip()
         if not field_info:
             continue
-        if field_info.startswith('-'):
-            model_decl = parse_model_name(field_info)
-            continue
+
         uifield = parse_field_info(field_info)
         if uifield:
+            if model_decl:
+                uifield.in_vc = model_decl.is_vc
             uifields.append(uifield)
 
     return uifields, model_decl
