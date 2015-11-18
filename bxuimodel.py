@@ -31,6 +31,9 @@ model_type_map = {
     'v': 'UIView',
     't': 'UITableViewCell',
     'c': 'UICollectionViewCell',
+    'vc': 'BaseUIViewController',
+    'tvc': 'BaseUITableViewController',
+    'tabvc': 'BaseUITabBarController',
 }
 
 field_pin_map = {
@@ -60,14 +63,123 @@ field_attr_map = {
 
 
 class ModelDecl(object):
-    def __init__(self, name, superclass):
+    def __init__(self, name, mtype, config_items):
         self.name = name
-        self.superclass = superclass
+        self.mtype = mtype
+        self.model_config = dict((item.ctype,item.value) for item in config_items)
+        self.superclass = model_type_map.get(mtype, 'UIView')
+
+    def has_attr(self, attr):
+        return attr in self.model_config
+
+    @property
+    def vc_mname(self):
+        return self.model_config.get('m', 'T')
+
+    @property
+    def has_adapter(self):
+        return 'adapter' in self.model_config
+
+    @property
+    def adapter_decl(self):
+        base = self.model_config.get('adapter')
+        if not base:
+            return ''
+        ctx = {
+            'mname': self.vc_mname,
+            'vname': self.vc_mname+"Cell"
+        }
+        if base == 'c':
+            return 'var adapter:SimpleGenericCollectionViewAdapter<{mname},{vname}>!'.format(**ctx)
+        else:
+            return 'var adapter:SimpleGenericTableViewAdapter<{mname},{vname}>!'.format(**ctx)
+
+    @property
+    def adapter_init(self):
+        base = self.model_config.get('adapter')
+        if not base:
+            return ''
+        if base == 'c':
+            return ' adapter = SimpleGenericCollectionViewAdapter(collectionView:collectionView)'
+        else:
+            return 'adapter = SimpleGenericTableViewAdapter(tableView:tableView)'
+
+    @property
+    def is_vc(self):
+        return 'vc' in self.mtype
+
+    @property
+    def is_tvc(self):
+        return 'tvc' == self.mtype
+
+    @property
+    def class_name(self):
+        if 'vc' in self.mtype:
+            return self.name + 'ViewController'
+        return self.name
 
     @property
     def init_stmts(self):
         return Template('''
-    {% if 'TableViewCell' in superclass %}
+{% if model.is_vc %}
+    {% if model.is_tvc %}
+    init(){
+        super.init(style:.Grouped)
+    }
+
+    init(style: UITableViewStyle){
+        super.init(style:style)
+    }
+
+    {% endif %}
+
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    }
+
+    override func loadView(){
+        super.loadView()
+         commonInit()
+    }
+
+    {{ model.adapter_decl }}
+
+     override func viewDidLoad() {
+        super.viewDidLoad()
+        {{ model.adapter_init }}
+
+        {% if model_is_tvc %}
+            clearsSelectionOnViewWillAppear = true
+            tableView.keyboardDismissMode = .OnDrag
+            tableView.rowHeight = UITableViewAutomaticDimension
+            tableView.estimatedRowHeight = 120
+            tableView.separatorStyle = .None
+            tableView.tableFooterView = UIView()
+        {% endif %}
+
+
+          {% if model.has_attr('req') %}  loadData() {% endif %}
+    }
+
+    {% if model.has_attr('req') %}
+
+    func loadData(){
+        request(ApiRouter.).responseApiResponse{ (resp:ApiResponse) in
+          if resp.ok{
+            self.handleResponse(resp)
+          }
+        }
+    }
+    func handleResponse(resp){
+
+    }
+    {% endif %}
+{% else %}
+    {% if 'TableViewCell' in model.superclass %}
      override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         commonInit()
@@ -87,7 +199,8 @@ class ModelDecl(object):
         super.awakeFromNib()
         commonInit()
     }
-''').render(superclass=self.superclass)
+{% endif %}
+''').render(model=self)
 
 
 def _field_name_to_type_name(field_name):
@@ -164,6 +277,7 @@ class UIField(object):
 
 
 field_pattern = re.compile(r'(?P<fname>\w+)(?:\[(?P<constraints>[\w,]+)\])?(?:\((?P<attrs>[\w,]+)\))?')
+model_pattern = re.compile(r'(?P<name>\w+)(?:\((?P<attrs>[\w=,]+)\))?')
 int_value_pattern = re.compile(r'(?P<value>\d+)')
 
 
@@ -202,15 +316,24 @@ def parse_field_config_item(config):
         ctype = c.replace(value, '')
     return ConfigItem(ctype, value)
 
+def parse_model_config_item(config):
+    c = config.strip()
+    parts = c.split('=')
+    ctype = parts[0]
+    value = parts[1] if len(parts) > 1 else ctype
+    return ConfigItem(ctype,value)
 
 def parse_model_name(model_info):
     parts = re.split(':', model_info.strip())
-    raw_mname = parts[0][1:]  # drop leading '-'
-    raw_mname = raw_mname.replace('-', '_')
-    model_name = _field_name_to_type_name(raw_mname)
+    model_config = parts[0][1:]  # drop leading '-'
     mtype = parts[1] if len(parts) > 1 else 'v'
-    superclass = model_type_map.get(mtype, 'UIView')
-    return ModelDecl(model_name, superclass)
+    matcher = model_pattern.search(model_config)
+    raw_mname = matcher.groupdict().get('name')
+    attrs_str = matcher.groupdict().get('attrs')
+    model_name = _field_name_to_type_name(raw_mname)
+    attr_pairs = attrs_str.split(',') if attrs_str else []
+    config_items = [parse_model_config_item(pair) for pair in attr_pairs if pair.strip()]
+    return ModelDecl(model_name, mtype, config_items)
 
 
 def parse_line(line):
@@ -233,10 +356,16 @@ def parse_line(line):
 
 uimode_tpl = '''
 import UIKit
+import SwiftyJSON
+import Bond
+import CocoaLumberjack
+import BXModel
+import PromiseKit
+
 {% for comment in comments %}
   {{ comment }}
 {% endfor %}
-class {{ model.name }} : {{model.superclass}} {
+class {{ model.class_name }} : {{model.superclass}} {
 {% for field in uifields %}
     {{ field.declare_stmt }}
 {% endfor %}
@@ -266,7 +395,6 @@ class {{ model.name }} : {{model.superclass}} {
     {{ field.attrs_stmt }}
     {% endfor %}
     }
-
 }
 '''
 
