@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='ios_code_generator',
-    version='0.1.1',
+    version='0.2.0',
     author='Haizhen Lee',
     author_email='banxi1988@gmail.com',
     description='iOS Code Generator',
