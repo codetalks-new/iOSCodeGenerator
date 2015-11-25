@@ -1,0 +1,31 @@
+{%  if has_textfield %}
+    // MARK: Handle Keyboard Events
+    func handleKeyboardEvents(){
+        for textField in allUITextFieldOutlets{
+            textField.delegate = self
+            textField.returnKeyType = .Next
+        }
+        allUITextFieldOutlets.last?.returnKeyType = .Done
+    }
+
+    var activeTextField:UITextField?
+    func textFieldDidBeginEditing(textField: UITextField) {
+        activeTextField = textField
+    }
+
+    func textFieldDidEndEditing(textField: UITextField) {
+        activeTextField = nil
+    }
+
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        let allTextFields = allUITextFieldOutlets
+        if let index = allTextFields.indexOf(textField){
+            if index.next() < allTextFields.count {
+                let nextTextField = allTextFields[index.next()]
+                nextTextField.becomeFirstResponder()
+            }
+        }
+        return true
+    }
+{% endif %}

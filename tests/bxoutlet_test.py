@@ -3,7 +3,7 @@
 import unittest
 import os
 import sys
-sys.path.insert(0, os.path.basename('..'))
+# sys.path.insert(0, os.path.basename('..'))
 
 from io import StringIO
 from ios_code_generator import bxoutlet

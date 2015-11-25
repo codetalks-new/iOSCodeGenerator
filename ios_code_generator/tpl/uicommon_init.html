@@ -1,0 +1,29 @@
+{% include 'outlets_group.html' %}
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+
+    func commonInit(){
+        for childView in allOutlets{
+        {% if 'cell' in model.superclass %}
+            contentView.addSubview(childView)
+        {% else %}
+            addSubview(childView)
+        {% endif %}
+            childView.translatesAutoresizingMaskIntoConstraints = false
+        }
+        installConstaints()
+        setupAttrs()
+    }
+
+    func installConstaints(){
+        {% for field in uifields %}
+        {{ field.constraints_stmt }}
+        {% endfor %}
+    }
+
+    func setupAttrs(){
+        {% for field in uifields %}
+        {{ field.attrs_stmt }}
+        {% endfor %}
+    }

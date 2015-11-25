@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 __author__ = 'banxi'
-import sys
+
 import re
+import sys
 from collections import namedtuple
-from jinja2 import Template
+
+FIELD_DELIMETER = ';'
 
 char_type_map = {
     'l': 'UILabel',
@@ -19,8 +21,24 @@ char_type_map = {
     'sw': 'UISwitch',
     'sl': 'UISlide',
     'sc': 'UISegmentedControl',
+    'tc': 'UITableViewCell',
 }
 
+
+type_value_field_map = {
+    'l': 'text',
+    'f': 'text',
+    'sw': 'on',
+}
+
+type_value_type_map = {
+    'l': 'String',
+    'f': 'String',
+    'sw': 'Bool'
+}
+
+
+### UIModel specifie
 view_designed_init_map = {
     'b': 'UIButton(type:.System)',
     'c': ' UICollectionView(frame: CGRectZero, collectionViewLayout: UICollectionViewFlowLayout())',
@@ -29,8 +47,8 @@ view_designed_init_map = {
 
 model_type_map = {
     'v': 'UIView',
-    't': 'UITableViewCell',
-    'c': 'UICollectionViewCell',
+    'tc': 'UITableViewCell',
+    'cc': 'UICollectionViewCell',
     'vc': 'BaseUIViewController',
     'tvc': 'BaseUITableViewController',
     'tabvc': 'BaseUITabBarController',
@@ -66,6 +84,13 @@ field_attr_map = {
     'ch': '+UIColor(hex:0xabc)'
 }
 
+# label:l,label2,button:b,view:v,imageView:i,field:f,addr:tc
+def _to_camel_style(word):
+    return word[0].uppercase() + word[1:]
+
+def _field_name_to_type_name(field_name):
+    words = re.split('_', field_name)
+    return ''.join([word for word in words if word])
 
 class ModelDecl(object):
     def __init__(self, name, mtype, config_items):
@@ -123,107 +148,101 @@ class ModelDecl(object):
             return self.name + 'ViewController'
         return self.name
 
-    @property
-    def init_stmts(self):
-        return Template('''
-{% if model.is_vc %}
-    {% if model.is_tvc %}
-    init(){
-        super.init(style:.Grouped)
-    }
-
-    init(style: UITableViewStyle){
-        super.init(style:style)
-    }
-
-    {% endif %}
-
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-    }
-
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
-        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
-    }
-
-    override func loadView(){
-        super.loadView()
-         commonInit()
-    }
-
-    {{ model.adapter_decl }}
-
-     override func viewDidLoad() {
-        super.viewDidLoad()
-        {{ model.adapter_init }}
-
-        {% if model_is_tvc %}
-            clearsSelectionOnViewWillAppear = true
-            tableView.keyboardDismissMode = .OnDrag
-            tableView.rowHeight = UITableViewAutomaticDimension
-            tableView.estimatedRowHeight = 120
-            tableView.separatorStyle = .None
-            tableView.tableFooterView = UIView()
-        {% endif %}
-
-
-          {% if model.has_attr('req') %}  loadData() {% endif %}
-    }
-
-    {% if model.has_attr('req') %}
-
-    func loadData(){
-        request(ApiRouter.).responseApiResponse{ (resp:ApiResponse) in
-          if resp.ok{
-            self.handleResponse(resp)
-          }
-        }
-    }
-    func handleResponse(resp){
-
-    }
-    {% endif %}
-{% else %}
-    {% if 'TableViewCell' in model.superclass %}
-     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        commonInit()
-    }
-    {% else %}
-      override init(frame: CGRect) {
-        super.init(frame: frame)
-        commonInit()
-     }
-     {% endif %}
-
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-    }
-
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        commonInit()
-    }
-{% endif %}
-''').render(model=self)
-
-
-def _field_name_to_type_name(field_name):
-    words = re.split('_', field_name)
-    return ''.join([word.capitalize() for word in words if word])
-
 
 class UIField(object):
     def __init__(self, name, ftype, constraints, attrs):
         type_class = char_type_map.get(ftype, 'UILabel')
         pure_type_name = type_class.replace('UI', '')
+        if ftype == 'tc':
+            pure_type_name = 'Cell'
         self.ftype = ftype
         self.field_name = "{name}{type_name}".format(name=name, type_name=pure_type_name)
         self.name = name
         self.type_class = type_class
         self.constraints = dict((item.ctype, item.value) for item in constraints)
         self.attrs = dict((item.ctype, item.value) for item in attrs)
-        self.in_vc = False
+        self.in_vc = 'controller' in target
+
+    @property
+    def outlet(self):
+        return '@IBOutlet weak var {field_name}:{type_class}!'.format(field_name=self.field_name,type_class=self.type_class)
+
+    @property
+    def has_value(self):
+        return self.ftype in type_value_field_map
+
+    @property
+    def extract_value_stmt(self):
+        if self.ftype == 'f':
+            ctx = dict(name=self.name, field_name=self.field_name)
+            stmt = 'let {name}Value = {field_name}.text?.strip()'.format(**ctx)
+            ctx['value_type'] = self.value_type
+            stmt += 'let field = BXField(name:"{name}",valueType:"{value_type}")\n'.format(**ctx)
+            stmt += 'field.value = {name}Value\n'.format(name=self.name)
+            stmt += 'fields.append(field)\n'
+            return stmt
+
+        else:
+            return ''
+
+    @property
+    def set_value_stmt(self):
+        if self.ftype in type_value_field_map:
+            value_field = type_value_field_map.get(self.ftype, 'text')
+            ctx = dict(name=self.name, field_name=self.field_name, value_field=value_field)
+            return ' {field_name}.{value_field}  = model.{name} '.format(**ctx)
+
+        elif self.ftype == 'i': #UIImage NSURL
+            ctx = dict(name=self.name, field_name=self.field_name)
+            return ' {field_name}.kf_setImageWithURL(item.{name})'.format(**ctx)
+
+        else:
+            return ''
+
+    @property
+    def is_required(self):
+        return not self.attrs.get('empty', False)
+
+    @property
+    def check_value_stmt(self):
+        if self.ftype in type_value_field_map and self.is_required:
+            stmt = 'try Validators.checkText(typeValue)'
+            return stmt
+        else:
+            return ''
+
+    @property
+    def can_set_value(self):
+        return self.ftype in type_value_field_map
+
+    @property
+    def value_type(self):
+        if self.has_value:
+            return type_value_type_map[self.ftype]
+        else:
+            return ''
+
+
+   ################################################################################
+        ## Above for outlet
+        ## below for uimodel
+    ################################################################################
+
+    @property
+    def can_bind_value(self):
+        return self.has_value
+
+    @property
+    def bind_value_stmt(self):
+        if self.ftype in type_value_field_map:
+            value_field = type_value_field_map.get(self.ftype, 'text')
+            ctx = dict(name=self.name, field_name=self.field_name, value_field=value_field)
+            return ' {field_name}.{value_field}  = item.{name} '.format(**ctx)
+        elif self.ftype == 'i': #UIImage NSURL
+            ctx = dict(name=self.name, field_name=self.field_name)
+            return ' {field_name}.kf_setImageWithURL(item.{name})'.format(**ctx)
+        else:
+            return ''
 
     @property
     def declare_stmt(self):
@@ -247,6 +266,8 @@ class UIField(object):
                     ctx = dict(field_name=self.field_name, func_name=func_name, value=value)
                     stmt = '{field_name}.{func_name}({value})'.format(**ctx)
                 c_stmts.append(stmt)
+        if c_stmts:
+            c_stmts.append('')
         return '\n'.join(c_stmts)
 
     @property
@@ -284,6 +305,20 @@ class UIField(object):
         return '\n'.join(stmts)
 
 
+ConfigItem = namedtuple('ConfigItem', ['ctype', 'value'])
+
+
+def parse_field_config_item(config):
+    c = config.strip()
+    m = int_value_pattern.search(c)
+    value = ''
+    ctype = c
+    if m:
+        value = m.groupdict().get('value')
+    if value:
+        ctype = c.replace(value, '')
+    return ConfigItem(ctype, value)
+
 field_pattern = re.compile(r'(?P<fname>\w+)(?:\[(?P<constraints>[\w,]+)\])?(?:\((?P<attrs>[\w,]+)\))?')
 model_pattern = re.compile(r'(?P<name>\w+)(?:\((?P<attrs>[\w=,]+)\))?')
 int_value_pattern = re.compile(r'(?P<value>\d+)')
@@ -313,20 +348,6 @@ def parse_field_info(field_info):
     return UIField(fname, ftype, constraints, attrs)
 
 
-ConfigItem = namedtuple('ConfigItem', ['ctype', 'value'])
-
-
-def parse_field_config_item(config):
-    c = config.strip()
-    m = int_value_pattern.search(c)
-    value = ''
-    ctype = c
-    if m:
-        value = m.groupdict().get('value')
-    if value:
-        ctype = c.replace(value, '')
-    return ConfigItem(ctype, value)
-
 def parse_model_config_item(config):
     c = config.strip()
     parts = c.split('=')
@@ -334,7 +355,8 @@ def parse_model_config_item(config):
     value = parts[1] if len(parts) > 1 else ctype
     return ConfigItem(ctype,value)
 
-def parse_model_name(model_info):
+def parse_model_name(line):
+    model_info = line.split(FIELD_DELIMETER)[0]
     parts = re.split(':', model_info.strip())
     model_config = parts[0][1:]  # drop leading '-'
     mtype = parts[1] if len(parts) > 1 else 'v'
@@ -349,91 +371,36 @@ def parse_model_name(model_info):
 
 def parse_line(line):
     field_infos = re.split(r';', line)
-
-    model_decl = None
-    if line.startswith('-'):
-        field_info = field_infos.pop(0)
-        if field_info.startswith('-'):
-            model_decl = parse_model_name(field_info)
     uifields = []
     for field_info in field_infos:
         field_info = field_info.strip()
         if not field_info:
             continue
-
         uifield = parse_field_info(field_info)
         if uifield:
-            if model_decl:
-                uifield.in_vc = model_decl.is_vc
             uifields.append(uifield)
 
-    return uifields, model_decl
+    return uifields
 
 
-uimode_tpl = '''
-import UIKit
-import SwiftyJSON
-import Bond
-import CocoaLumberjack
-import BXModel
-import PromiseKit
-
-{% for comment in comments %}
-  {{ comment }}
-{% endfor %}
-class {{ model.class_name }} : {{model.superclass}} {
-{% for field in uifields %}
-    {{ field.declare_stmt }}
-{% endfor %}
-    {{ model.init_stmts }}
-    func commonInit(){
-        let childViews = [{{ childViews }}]
-        for childView in childViews{
-            {% if 'cell' in model.superclass %}
-            contentView.addSubview(childView)
-            {% else %}
-            addSubview(childView)
-            {% endif %}
-            childView.translatesAutoresizingMaskIntoConstraints = false
-        }
-        installConstaints()
-        setupAttrs()
-    }
-
-    func installConstaints(){
-    {% for field in uifields %}
-    {{ field.constraints_stmt }}
-    {% endfor %}
-    }
-
-    func setupAttrs(){
-    {% for field in uifields %}
-    {{ field.attrs_stmt }}
-    {% endfor %}
-    }
-}
-'''
-
-
-def main():
+target = 'uimodel'
+def generate(target='uimodel',  **options):
+    globals()['target'] = target
+    print("// Build for target "+target)
     uifield_list = []
-
     comments = []
     last_model_decl = None
     for line in sys.stdin:
         line = line.strip()
         if line:
             comments.append("// " + line)
-            uifields, model_decl = parse_line(line)
-            if model_decl:
-                last_model_decl = model_decl
+            if line.startswith('-'):
+                last_model_decl = parse_model_name(line)
+                continue
+            uifields = parse_line(line)
             if uifields:
                 uifield_list.extend(uifields)
-    template = Template(uimode_tpl, trim_blocks=True, lstrip_blocks=True)
-    childViews = ','.join([f.field_name for f in uifield_list])
-    text = template.render(model=last_model_decl, uifields=uifield_list, childViews=childViews, comments=comments)
-    print(text)
-
-
-if __name__ == '__main__':
-    main()
+    from .helper import jinja2_env
+    template = jinja2_env.get_template('bx%s_tpl.html' % target)
+    has_textfield = len([field for field in uifield_list if field.ftype == 'f' ]) > 0
+    return template.render(model=last_model_decl, uifields=uifield_list, has_textfield=has_textfield, comments=comments)

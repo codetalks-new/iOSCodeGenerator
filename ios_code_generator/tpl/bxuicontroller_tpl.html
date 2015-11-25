@@ -1,0 +1,71 @@
+import UIKit
+import SwiftyJSON
+import Bond
+import CocoaLumberjack
+import BXModel
+import PromiseKit
+
+{% for comment in comments %}
+{{ comment }}
+{% endfor %}
+
+class {{ model.class_name }} : {{model.superclass}} {
+
+    {% for field in uifields %}
+    {{ field.declare_stmt }}
+    {% endfor %}
+    {% if model.is_tvc %}
+        init(){
+        super.init(style:.Grouped)
+        }
+
+        init(style: UITableViewStyle){
+        super.init(style:style)
+        }
+    {% endif %}
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    }
+
+    {% include 'uicommon_init.html' %}
+
+    override func loadView(){
+        super.loadView()
+        commonInit()
+    }
+
+    {{ model.adapter_decl }}
+    override func viewDidLoad() {
+    super.viewDidLoad()
+    {{ model.adapter_init }}
+
+    {% if model.is_tvc %}
+        clearsSelectionOnViewWillAppear = true
+        tableView.keyboardDismissMode = .OnDrag
+        tableView.tableFooterView = UIView()
+        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.estimatedRowHeight = 120
+        tableView.separatorStyle = .None
+    {% endif %}
+    {% if model.has_attr('req') %}  loadData() {% endif %}
+    }
+
+    {% if model.has_attr('req') %}
+        func loadData(){
+        request(ApiRouter.).responseApiResponse{ (resp:ApiResponse) in
+        if resp.ok{
+        self.handleResponse(resp)
+        }
+        }
+        }
+        func handleResponse(resp:ApiResponse){
+
+        }
+    {%  endif %}
+
+
+    {%  include 'handle_keyboardEvents.html' %}

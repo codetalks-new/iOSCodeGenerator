@@ -1,0 +1,43 @@
+import UIKit
+import SwiftyJSON
+import Bond
+import CocoaLumberjack
+import BXModel
+import PromiseKit
+
+{% for comment in comments %}
+{{ comment }}
+{% endfor %}
+
+class {{ model.class_name }} : {{model.superclass}},BXBindable {
+    {% for field in uifields %}
+    {{ field.declare_stmt }}
+    {% endfor %}
+
+    {% if 'TableViewCell' in model.superclass %}
+    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        commonInit()
+    }
+    {% else %}
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        commonInit()
+    }
+    {% endif %}
+
+    func bind(item:{{model.vc_mname}}){
+    {% for field in uifields %}
+        {% if field.can_bind_value %}
+        {{field.bind_value_stmt}}
+        {% endif %}
+    {% endfor %}
+    }
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        commonInit()
+    }
+
+    {%  include 'uicommon_init.html' %}
+
