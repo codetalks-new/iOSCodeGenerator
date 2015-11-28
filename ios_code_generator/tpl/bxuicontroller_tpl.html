@@ -26,12 +26,11 @@ class {{ model.class_name }} : {{model.superclass}} {
     convenience init(){
         self.init(nibName: nil, bundle: nil)
     }
-
+    {% endif %}
+    // must needed for iOS 8
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
-    {% endif %}
-
     {% include 'uicommon_init.html' %}
 
     override func loadView(){

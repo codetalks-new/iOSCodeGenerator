@@ -248,7 +248,7 @@ class UIField(object):
 
     @property
     def can_bind_value(self):
-        return self.has_value
+        return self.has_value or self.ftype in ['i'] ## image can bind value
 
     @property
     def bind_value_stmt(self):

@@ -13,6 +13,7 @@ class {{ model.class_name }} : {{model.superclass}},BXBindable {
     {% for field in uifields %}
     {{ field.declare_stmt }}
     {% endfor %}
+    {{ model.adapter_decl }}
 
     {% if 'TableViewCell' in model.superclass %}
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
