@@ -1,0 +1,16 @@
+enum {{ model.class_name }} {% if model.raw_type %}:{{ model.raw_type }}{% endif %} {
+ {%  for uifield in uifields %}
+     {% if model.raw_type %}
+     case {{ uifield.cap_name }} =  {% if model.mtype == 's'  %}"{{ uifield.name  }}" {% else %} {{ uifield.ftype }}{% endif %}
+     {% else %}
+     case {{ uifield.cap_name }}
+     {% endif %}
+
+ {% endfor %}
+{% for uifield in uifields %}
+    var is{{ uifield.cap_name }}:Bool{
+        return self == .{{ uifield.cap_name }}
+    }
+{% endfor %}
+    static let allCases:[{{ model.class_name }}] = [{{  uifields|map(attribute='cap_name')|join(',') }}]
+}

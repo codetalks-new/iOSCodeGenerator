@@ -8,7 +8,11 @@
         {% if 'cell' in model.superclass %}
             contentView.addSubview(childView)
         {% else %}
+            {% if model.is_vc %}
+            self.view.addSubview(childView)
+            {% else %}
             addSubview(childView)
+            {% endif %}
         {% endif %}
             childView.translatesAutoresizingMaskIntoConstraints = false
         }

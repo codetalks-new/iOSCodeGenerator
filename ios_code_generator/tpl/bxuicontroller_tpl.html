@@ -19,22 +19,24 @@ class {{ model.class_name }} : {{model.superclass}} {
         super.init(style:.Grouped)
         }
 
-        init(style: UITableViewStyle){
+        override init(style: UITableViewStyle){
         super.init(style:style)
         }
-    {% endif %}
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
+    {% else %}
+    convenience init(){
+        self.init(nibName: nil, bundle: nil)
     }
 
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
+    {% endif %}
 
     {% include 'uicommon_init.html' %}
 
     override func loadView(){
         super.loadView()
+        self.view.backgroundColor = UIColor.whiteColor()
         commonInit()
     }
 
@@ -69,3 +71,5 @@ class {{ model.class_name }} : {{model.superclass}} {
 
 
     {%  include 'handle_keyboardEvents.html' %}
+
+}

@@ -15,6 +15,7 @@ char_type_map = {
     'f': 'UITextField',
     't': 'UITableView',
     'c': 'UICollectionView',
+    'sb': 'UISearchBar',
     'pc': 'UIPageControl',
     'dp': 'UIDatePicker',
     'st': 'UIStepper',
@@ -22,6 +23,7 @@ char_type_map = {
     'sl': 'UISlide',
     'sc': 'UISegmentedControl',
     'tc': 'UITableViewCell',
+    'tb': 'UIToolbar',
 }
 
 
@@ -42,7 +44,7 @@ type_value_type_map = {
 view_designed_init_map = {
     'b': 'UIButton(type:.System)',
     'c': ' UICollectionView(frame: CGRectZero, collectionViewLayout: UICollectionViewFlowLayout())',
-    't': ''
+    'sb': 'UISearchBar()',
 }
 
 model_type_map = {
@@ -84,6 +86,10 @@ field_attr_map = {
     'ch': '+UIColor(hex:0xabc)'
 }
 
+enum_raw_type_map = {
+    'i':'Int',
+    's':'String'
+}
 # label:l,label2,button:b,view:v,imageView:i,field:f,addr:tc
 def _to_camel_style(word):
     return word[0].uppercase() + word[1:]
@@ -148,6 +154,14 @@ class ModelDecl(object):
             return self.name + 'ViewController'
         return self.name
 
+    ##################################
+    ## Enum Support
+    ##################################
+
+    @property
+    def raw_type(self):
+        return enum_raw_type_map.get(self.mtype)
+
 
 class UIField(object):
     def __init__(self, name, ftype, constraints, attrs):
@@ -162,6 +176,10 @@ class UIField(object):
         self.constraints = dict((item.ctype, item.value) for item in constraints)
         self.attrs = dict((item.ctype, item.value) for item in attrs)
         self.in_vc = 'controller' in target
+
+    @property
+    def cap_name(self):
+        return self.name.capitalize()
 
     @property
     def outlet(self):
@@ -248,7 +266,21 @@ class UIField(object):
     def declare_stmt(self):
         frame_init = '{type_class}(frame:CGRectZero)'.format(type_class=self.type_class)
         construct_exp = view_designed_init_map.get(self.ftype, frame_init)
-        return ' let {field_name} = {construct_exp}'.format(field_name=self.field_name, construct_exp=construct_exp)
+        stmt = ' let {field_name} = {construct_exp}'.format(field_name=self.field_name, construct_exp=construct_exp)
+        if self.ftype == 'c':
+            stmt += '''
+  private let flowLayout:UICollectionViewFlowLayout = {
+      let flowLayout = UICollectionViewFlowLayout()
+      flowLayout.minimumInteritemSpacing = 10
+      flowLayout.itemSize = CGSize(width:100,height:100)
+      flowLayout.minimumLineSpacing = 0
+      flowLayout.sectionInset = UIEdgeInsetsZero
+      flowLayout.scrollDirection = .Vertical
+      return flowLayout
+  }()
+            '''
+
+        return stmt
 
     @property
     def constraints_stmt(self):
@@ -404,3 +436,5 @@ def generate(target='uimodel',  **options):
     template = jinja2_env.get_template('bx%s_tpl.html' % target)
     has_textfield = len([field for field in uifield_list if field.ftype == 'f' ]) > 0
     return template.render(model=last_model_decl, uifields=uifield_list, has_textfield=has_textfield, comments=comments)
+
+

@@ -20,6 +20,11 @@ class MyTestCase(unittest.TestCase):
         text = core.generate('uicontroller')
         print(text)
 
+    def test_enum(self):
+        strio = StringIO(u"-User:s\nvideo;list;table;text;picture")
+        sys.stdin = strio
+        text = core.generate('enum')
+        print(text)
 
 if __name__ == '__main__':
     unittest.main()
