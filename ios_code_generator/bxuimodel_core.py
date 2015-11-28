@@ -83,7 +83,8 @@ field_attr_map = {
     'cb': 'UIColor.blackColor',
     'cw': 'UIColor.whiteColor',
     'cwa': '+UIColor(white: 1.0, alpha: 1.0)',
-    'ch': '+UIColor(hex:0xabc)'
+    'ch': '+UIColor(hex:0xabc)',
+    'ca': '+AppColors.colorAccent',
 }
 
 enum_raw_type_map = {

@@ -2,7 +2,7 @@
 __author__ = 'banxi'
 
 import unittest
-import bxmodel
+from ios_code_generator import bxmodel
 import sys
 from io import StringIO
 

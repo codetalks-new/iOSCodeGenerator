@@ -16,6 +16,9 @@ class {{ model.class_name }} : {{model.superclass}},BXBindable {
     {{ model.adapter_decl }}
 
     {% if 'TableViewCell' in model.superclass %}
+    convenience init() {
+        self.init(style: .Default, reuseIdentifier: "{{ model.class_name }}Cell")
+    }
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         commonInit()

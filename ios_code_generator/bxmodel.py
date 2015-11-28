@@ -13,6 +13,7 @@ char_type_map = {
     'b': 'Bool',
     'u': 'NSURL',
     'r': 'Ref',
+    'j': 'JSON',
     'di': 'NSDate',
     'ds': 'NSDate',
     '[s': 'Array',
@@ -51,6 +52,10 @@ def parse_field_info(field_info):
             # NSURL
             stmt = '    self.{fname} = NSURL(string:json["{fname}"].stringValue)!'.format(fname=fname)
             dict_stmt = 'dict["{fname}"] = self.{fname}.absoluteString'.format(fname=fname)
+        elif ftype == 'j':
+            # JSON
+            stmt = '    self.{fname} = json["{fname}"]'.format(fname=fname)
+            dict_stmt = 'dict["{fname}"] = self.{fname}'.format(fname=fname)
         else:
             json_type = type_class.lower()
             stmt = '    self.{fname} = json["{fname}"].{json_type}Value'.format(fname=fname, json_type=json_type)
