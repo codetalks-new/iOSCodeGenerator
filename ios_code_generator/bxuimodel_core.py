@@ -295,7 +295,7 @@ class UIField(object):
             if func_name:
                 complex_value = value
                 if ctype == 'e':
-                    complex_value = 'UIEdgeInsts(top: {value}, left: {value}, bottom: {value}, right: {value})'.format(value=value)
+                    complex_value = 'UIEdgeInsets(top: {value}, left: {value}, bottom: {value}, right: {value})'.format(value=value)
                 if self.in_vc and (ctype in vc_pin_map):
                     ctx = dict(func_name=vc_pin_map[ctype], view=self.field_name, value=complex_value)
                     stmt = '{func_name}({view},margin:{value})'.format(**ctx)
