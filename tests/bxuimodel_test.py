@@ -10,7 +10,7 @@ from ios_code_generator import bxuimodel_core as core
 
 class MyTestCase(unittest.TestCase):
     def test_viewModel(self):
-        strio = StringIO(u"-UserTableViewCell(m=User):tc\nauthor[y,l15,w36,a1]:i;bg[t,l,r,b]:i;title(f14,cw);id[x,y](ch):l;url(cwa):b;mobile:f;bgView(cwa):v")
+        strio = StringIO(u"-UserTableViewCell(m=User):tc\nauthor[y,l15,w36,a1]:i;bg[e0]:i;title(f14,cw);id[x,y](ch):l;url(cwa):b;mobile:f;bgView(cwa):v")
         sys.stdin = strio
         bxuimodel.main()
 

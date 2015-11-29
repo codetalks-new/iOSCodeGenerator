@@ -65,7 +65,8 @@ field_pin_map = {
     'b': 'pinBottom',
     'w': 'pinWidth',
     'h': 'pinHeight',
-    'a': 'pinAspectRatio'
+    'a': 'pinAspectRatio',
+    'e': 'pinEdge',
 
 }
 
@@ -292,11 +293,14 @@ class UIField(object):
         for ctype, value in self.constraints.iteritems():
             func_name = field_pin_map.get(ctype)
             if func_name:
+                complex_value = value
+                if ctype == 'e':
+                    complex_value = 'UIEdgeInsts(top: {value}, left: {value}, bottom: {value}, right: {value})'.format(value=value)
                 if self.in_vc and (ctype in vc_pin_map):
-                    ctx = dict(func_name=vc_pin_map[ctype], view=self.field_name)
-                    stmt = '{func_name}({view})'.format(**ctx)
+                    ctx = dict(func_name=vc_pin_map[ctype], view=self.field_name, value=complex_value)
+                    stmt = '{func_name}({view},margin:{value})'.format(**ctx)
                 else:
-                    ctx = dict(field_name=self.field_name, func_name=func_name, value=value)
+                    ctx = dict(field_name=self.field_name, func_name=func_name, value=complex_value)
                     stmt = '{field_name}.{func_name}({value})'.format(**ctx)
                 c_stmts.append(stmt)
         if c_stmts:
