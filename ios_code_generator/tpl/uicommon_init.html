@@ -18,7 +18,9 @@
         }
         installConstaints()
         setupAttrs()
+        {% if not model.is_vc %}
         {{ model.adapter_init }}
+        {% endif %}
     }
 
     func installConstaints(){

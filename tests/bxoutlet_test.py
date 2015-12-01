@@ -10,7 +10,7 @@ from ios_code_generator import bxoutlet
 
 class MyTestCase(unittest.TestCase):
     def test_outlet(self):
-        strio = StringIO(u"label:l;name(required):f;button:b;view:v;imageView:i;field:f;addr:tc")
+        strio = StringIO(u"_:c;label:l;name(required):f;button:b;view:v;imageView:i;field:f;addr:tc")
         sys.stdin = strio
         bxoutlet.main()
 

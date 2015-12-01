@@ -79,6 +79,7 @@ field_attr_map = {
     'f': 'UIFont.systemFontOfSize',
     'fb': 'UIFont.boldSystemFontOfSize',
     'cdg': 'UIColor.darkGrayColor',
+    'cdt': 'UIColor.darkTextColor',
     'cg': 'UIColor.grayColor',
     'clg': 'UIColor.lightGrayColor',
     'cb': 'UIColor.blackColor',
@@ -94,7 +95,10 @@ enum_raw_type_map = {
 }
 # label:l,label2,button:b,view:v,imageView:i,field:f,addr:tc
 def _to_camel_style(word):
-    return word[0].uppercase() + word[1:]
+    return word[0].upper() + word[1:]
+
+def _to_camelCase_varName(word):
+    return word[0].lower() + word[1:]
 
 def _field_name_to_type_name(field_name):
     words = re.split('_', field_name)
@@ -152,7 +156,7 @@ class ModelDecl(object):
 
     @property
     def class_name(self):
-        if 'vc' in self.mtype:
+        if 'vc' in self.mtype and 'ViewController' not in self.name:
             return self.name + 'ViewController'
         return self.name
 
@@ -172,7 +176,10 @@ class UIField(object):
         if ftype == 'tc':
             pure_type_name = 'Cell'
         self.ftype = ftype
-        self.field_name = "{name}{type_name}".format(name=name, type_name=pure_type_name)
+        if name == '_':
+            self.field_name = _to_camelCase_varName(pure_type_name)
+        else:
+            self.field_name = "{name}{type_name}".format(name=name, type_name=pure_type_name)
         self.name = name
         self.type_class = type_class
         self.constraints = dict((item.ctype, item.value) for item in constraints)
