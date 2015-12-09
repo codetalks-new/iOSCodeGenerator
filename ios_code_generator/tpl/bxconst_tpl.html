@@ -1,0 +1,9 @@
+{% for comment in comments %}
+{{ comment }}
+{% endfor %}
+struct {{ model.class_name }}  {
+{%  for uifield in uifields %}
+    static let {{ uifield.name }} =  "{{ uifield.name  }}"
+{% endfor %}
+    static let allConsts:[String] = [{{  uifields|map(attribute='name')|join(',') }}]
+}

@@ -1,7 +1,16 @@
+{% for comment in comments %}
+{{ comment }}
+{% endfor %}
 enum {{ model.class_name }} {% if model.raw_type %}:{{ model.raw_type }}{% endif %} {
  {%  for uifield in uifields %}
      {% if model.raw_type %}
-     case {{ uifield.cap_name }} =  {% if model.mtype == 's'  %}"{{ uifield.name  }}" {% else %} {{ uifield.ftype }}{% endif %}
+        {% if model.mtype == 's' %}
+        case {{ uifield.cap_name }} =  "{{ uifield.name  }}"
+        {% elif model.mtype == 'i' %}
+        case {{ uifield.cap_name }} =  {{loop.index0}}
+        {% else %}
+        case {{ uifield.cap_name }}
+        {% endif %}
      {% else %}
      case {{ uifield.cap_name }}
      {% endif %}
@@ -12,5 +21,13 @@ enum {{ model.class_name }} {% if model.raw_type %}:{{ model.raw_type }}{% endif
         return self == .{{ uifield.cap_name }}
     }
 {% endfor %}
+    var title:String{
+        switch self{
+        {% for uifield in uifields %}
+        case {{uifield.cap_name}}:return "{{uifield.enum_title}}"
+        {% endfor %}
+        }
+    }
+
     static let allCases:[{{ model.class_name }}] = [{{  uifields|map(attribute='cap_name')|join(',') }}]
 }

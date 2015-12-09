@@ -1,8 +1,9 @@
+#-*- coding:utf-8 -*-
 import unittest
 
 import os
 import sys
-# sys.path.insert(0, os.path.basename('..'))
+sys.path.insert(0, os.path.basename('..'))
 from io import StringIO
 
 from ios_code_generator import bxuimodel
@@ -25,6 +26,23 @@ class MyTestCase(unittest.TestCase):
         sys.stdin = strio
         text = core.generate('enum')
         print(text)
+        strio = StringIO(u"-User:i\nvideo;list;table;text;picture")
+        sys.stdin = strio
+        text = core.generate('enum')
+        print(text)
+
+    def test_enum_v2(self):
+        strio = StringIO(u"-ExploreType:i\n curious:评测;news:菜谱;creator:维护;wiki:百科")
+        sys.stdin = strio
+        text = core.generate('enum')
+        print(text)
+
+    def test_const(self):
+        strio = StringIO(u"-User\nvideo;list;table;text;picture")
+        sys.stdin = strio
+        text = core.generate('const')
+        print(text)
+
 
 if __name__ == '__main__':
     unittest.main()

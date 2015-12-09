@@ -35,11 +35,16 @@ class {{ model.class_name }} : {{model.superclass}} {
 
     override func loadView(){
         super.loadView()
-        self.view.backgroundColor = UIColor.whiteColor()
+        self.view.backgroundColor = AppColors.colorBackground
         commonInit()
     }
 
     {{ model.adapter_decl }}
+
+    {% if model.has_attr('sadapter') %}
+        let staticAdapter = StaticTableViewAdapter()
+    {% endif %}
+
     override func viewDidLoad() {
     super.viewDidLoad()
     {{ model.adapter_init }}
@@ -56,6 +61,11 @@ class {{ model.class_name }} : {{model.superclass}} {
     }
 
     {% if model.has_attr('req') %}
+        {% if model.has_attr('page') %}
+        let pageSize = 20
+        var page = 1
+        var hasMore = true
+        {% endif %}
         func loadData(){
         request(ApiRouter.).responseApiResponse{ (resp:ApiResponse) in
         if resp.ok{

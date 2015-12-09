@@ -1,0 +1,52 @@
+{% for comment in comments %}
+{{ comment }}
+{% endfor %}
+enum ApiRouter:URLRequestConvertible{
+{%  for router in routers %}
+    {{ router.case_stmt }}
+{% endfor %}
+
+    var path:String{
+        switch self{
+        {%  for router in routers %}
+            {{ router.path_stmt }}
+        {% endfor %}
+        }
+    }
+
+    var params:[String:AnyObject]?{
+        switch self{
+            {%  for router in routers %}
+            {{ router.params_stmt }}
+            {% endfor %}
+            default: return nil
+        }
+    }
+
+    var method:Alamofire.Method{
+        switch self{
+        case {{ post_routers|map(attribute='dot_name')|join(',') }}:
+            return .POST
+        default:
+            return .GET
+        }
+    }
+    var isPublic:Bool{
+        switch self{
+        case {{ public_routers|map(attribute='dot_name')|join(',') }}:
+            return true
+        default:return false
+        }
+    }
+
+    var URLRequest: NSMutableURLRequest {
+        let mutableURLRequest = NSMutableURLRequest(URL:fullURL)
+        mutableURLRequest.HTTPMethod = method.rawValue
+        return Alamofire.ParameterEncoding.URL.encode(mutableURLRequest, parameters: params).0
+    }
+
+    var fullURL:NSURL{
+        let URL = NSURL(string:API_BASE_URL)!
+        return URL.URLByAppendingPathComponent(path)
+    }
+}

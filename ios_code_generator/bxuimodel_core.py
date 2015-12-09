@@ -14,18 +14,21 @@ char_type_map = {
     'i': 'UIImageView',
     'f': 'UITextField',
     't': 'UITableView',
+    's': 'UIScrollView',
     'c': 'UICollectionView',
+    'cb': 'CheckboxButton',
+    'ib': 'IconButton',
     'sb': 'UISearchBar',
     'pc': 'UIPageControl',
     'dp': 'UIDatePicker',
     'st': 'UIStepper',
     'sw': 'UISwitch',
-    'sl': 'UISlide',
+    'sl': 'UISlider',
     'sc': 'UISegmentedControl',
     'tc': 'UITableViewCell',
+    'stc': 'StaticTableViewCell',
     'tb': 'UIToolbar',
 }
-
 
 type_value_field_map = {
     'l': 'text',
@@ -39,7 +42,6 @@ type_value_type_map = {
     'sw': 'Bool'
 }
 
-
 ### UIModel specifie
 view_designed_init_map = {
     'b': 'UIButton(type:.System)',
@@ -49,7 +51,11 @@ view_designed_init_map = {
 
 model_type_map = {
     'v': 'UIView',
+    't': 'UITableView',
+    's': 'UIScrollView',
+    'c': 'UICollectionView',
     'tc': 'UITableViewCell',
+    'stc': 'StaticTableViewCell',
     'cc': 'UICollectionViewCell',
     'vc': 'BaseUIViewController',
     'tvc': 'BaseUITableViewController',
@@ -87,28 +93,34 @@ field_attr_map = {
     'cwa': '+UIColor(white: 1.0, alpha: 1.0)',
     'ch': '+UIColor(hex:0xabc)',
     'ca': '+AppColors.colorAccent',
+    'bp': 'setBackgroundImage(UIImage.Asset.ButtonPrimary.image,forState:.Normal)'
 }
 
 enum_raw_type_map = {
-    'i':'Int',
-    's':'String'
+    'i': 'Int',
+    's': 'String'
 }
+
+
 # label:l,label2,button:b,view:v,imageView:i,field:f,addr:tc
 def _to_camel_style(word):
     return word[0].upper() + word[1:]
 
+
 def _to_camelCase_varName(word):
     return word[0].lower() + word[1:]
+
 
 def _field_name_to_type_name(field_name):
     words = re.split('_', field_name)
     return ''.join([word for word in words if word])
 
+
 class ModelDecl(object):
     def __init__(self, name, mtype, config_items):
         self.name = name
         self.mtype = mtype
-        self.model_config = dict((item.ctype,item.value) for item in config_items)
+        self.model_config = dict((item.ctype, item.value) for item in config_items)
         self.superclass = model_type_map.get(mtype, 'UIView')
 
     def has_attr(self, attr):
@@ -129,7 +141,7 @@ class ModelDecl(object):
             return ''
         ctx = {
             'mname': self.vc_mname,
-            'vname': self.vc_mname+"Cell"
+            'vname': self.vc_mname + "Cell"
         }
         if base == 'c':
             return 'var adapter:SimpleGenericCollectionViewAdapter<{mname},{vname}>!'.format(**ctx)
@@ -179,7 +191,10 @@ class UIField(object):
         if name == '_':
             self.field_name = _to_camelCase_varName(pure_type_name)
         else:
-            self.field_name = "{name}{type_name}".format(name=name, type_name=pure_type_name)
+            if name.endswith('_'):
+                self.field_name = name[:-1]
+            else:
+                self.field_name = "{name}{type_name}".format(name=name, type_name=pure_type_name)
         self.name = name
         self.type_class = type_class
         self.constraints = dict((item.ctype, item.value) for item in constraints)
@@ -191,8 +206,13 @@ class UIField(object):
         return self.name.capitalize()
 
     @property
+    def enum_title(self):
+        return self.ftype
+
+    @property
     def outlet(self):
-        return '@IBOutlet weak var {field_name}:{type_class}!'.format(field_name=self.field_name,type_class=self.type_class)
+        return '@IBOutlet weak var {field_name}:{type_class}!'.format(field_name=self.field_name,
+                                                                      type_class=self.type_class)
 
     @property
     def has_value(self):
@@ -219,7 +239,7 @@ class UIField(object):
             ctx = dict(name=self.name, field_name=self.field_name, value_field=value_field)
             return ' {field_name}.{value_field}  = model.{name} '.format(**ctx)
 
-        elif self.ftype == 'i': #UIImage NSURL
+        elif self.ftype == 'i':  # UIImage NSURL
             ctx = dict(name=self.name, field_name=self.field_name)
             return ' {field_name}.kf_setImageWithURL(item.{name})'.format(**ctx)
 
@@ -250,14 +270,15 @@ class UIField(object):
             return ''
 
 
-   ################################################################################
-        ## Above for outlet
-        ## below for uimodel
+            ################################################################################
+            ## Above for outlet
+            ## below for uimodel
+
     ################################################################################
 
     @property
     def can_bind_value(self):
-        return self.has_value or self.ftype in ['i'] ## image can bind value
+        return self.has_value or self.ftype in ['i']  ## image can bind value
 
     @property
     def bind_value_stmt(self):
@@ -265,7 +286,7 @@ class UIField(object):
             value_field = type_value_field_map.get(self.ftype, 'text')
             ctx = dict(name=self.name, field_name=self.field_name, value_field=value_field)
             return ' {field_name}.{value_field}  = item.{name} '.format(**ctx)
-        elif self.ftype == 'i': #UIImage NSURL
+        elif self.ftype == 'i':  # UIImage NSURL
             ctx = dict(name=self.name, field_name=self.field_name)
             return ' {field_name}.kf_setImageWithURL(item.{name})'.format(**ctx)
         else:
@@ -302,7 +323,8 @@ class UIField(object):
             if func_name:
                 complex_value = value
                 if ctype == 'e':
-                    complex_value = 'UIEdgeInsets(top: {value}, left: {value}, bottom: {value}, right: {value})'.format(value=value)
+                    complex_value = 'UIEdgeInsets(top: {value}, left: {value}, bottom: {value}, right: {value})'.format(
+                        value=value)
                 if self.in_vc and (ctype in vc_pin_map):
                     ctx = dict(func_name=vc_pin_map[ctype], view=self.field_name, value=complex_value)
                     stmt = '{func_name}({view},margin:{value})'.format(**ctx)
@@ -319,7 +341,7 @@ class UIField(object):
         if not self.attrs:
             return ''
         stmts = []
-        for ctype,value in self.attrs.iteritems():
+        for ctype, value in self.attrs.iteritems():
             func_name = field_attr_map.get(ctype)
             if not func_name:
                 continue
@@ -330,18 +352,20 @@ class UIField(object):
             if self.ftype == 'v':
                 # UIView
                 prop_name = 'backgroundColor'
+            if ctype.startswith('b'):
+                prop_name = ''  # UIButton property
             ctx = dict(field_name=self.field_name, prop_name=prop_name, func_name=func_name)
             if no_param:
                 if self.ftype == 'b':
                     # UIButton
-                    stmt = '{field_name}.setTitleColor({func_name}, forState: .Normal)' .format(**ctx)
+                    stmt = '{field_name}.setTitleColor({func_name}, forState: .Normal)'.format(**ctx)
                 else:
                     stmt = '{field_name}.{prop_name} = {func_name}'.format(**ctx)
             else:
                 ctx['value'] = value
                 if self.ftype == 'b':
                     # UIButton
-                    stmt = '{field_name}.setTitleColor({func_name}({value}), forState: .Normal)' .format(**ctx)
+                    stmt = '{field_name}.setTitleColor({func_name}({value}), forState: .Normal)'.format(**ctx)
                 else:
                     stmt = '{field_name}.{prop_name} = {func_name}({value})'.format(**ctx)
             stmts.append(stmt)
@@ -363,13 +387,16 @@ def parse_field_config_item(config):
         ctype = c.replace(value, '')
     return ConfigItem(ctype, value)
 
+
 field_pattern = re.compile(r'(?P<fname>\w+)(?:\[(?P<constraints>[\w,]+)\])?(?:\((?P<attrs>[\w,]+)\))?')
 model_pattern = re.compile(r'(?P<name>\w+)(?:\((?P<attrs>[\w=,]+)\))?')
 int_value_pattern = re.compile(r'(?P<value>\d+)')
 
+
 def parse_field_config(config):
     pairs = config.split(',') if config else []
     return [parse_field_config_item(pair) for pair in pairs]
+
 
 def parse_field_info(field_info):
     parts = re.split(':', field_info.strip())
@@ -397,7 +424,8 @@ def parse_model_config_item(config):
     parts = c.split('=')
     ctype = parts[0]
     value = parts[1] if len(parts) > 1 else ctype
-    return ConfigItem(ctype,value)
+    return ConfigItem(ctype, value)
+
 
 def parse_model_name(line):
     model_info = line.split(FIELD_DELIMETER)[0]
@@ -428,15 +456,22 @@ def parse_line(line):
 
 
 target = 'uimodel'
-def generate(target='uimodel',  **options):
+
+
+def generate(target='uimodel', **options):
     globals()['target'] = target
-    print("// Build for target "+target)
+    print("// Build for target " + target)
+    import locale
+    print("//locale %s" % repr(locale.getlocale()))
+    locale_info = repr(locale.getlocale())
     uifield_list = []
     comments = []
     last_model_decl = None
     for line in sys.stdin:
         line = line.strip()
         if line:
+            if isinstance(line, str):
+                line = line.decode(encoding='utf-8')
             comments.append("// " + line)
             if line.startswith('-'):
                 last_model_decl = parse_model_name(line)
@@ -446,7 +481,7 @@ def generate(target='uimodel',  **options):
                 uifield_list.extend(uifields)
     from .helper import jinja2_env
     template = jinja2_env.get_template('bx%s_tpl.html' % target)
-    has_textfield = len([field for field in uifield_list if field.ftype == 'f' ]) > 0
-    return template.render(model=last_model_decl, uifields=uifield_list, has_textfield=has_textfield, comments=comments)
-
-
+    has_textfield = len([field for field in uifield_list if field.ftype == 'f']) > 0
+    locale_info.encode(encoding='utf-8')
+    text = template.render(model=last_model_decl, uifields=uifield_list, has_textfield=has_textfield, comments=comments)
+    return text.encode('utf-8')
