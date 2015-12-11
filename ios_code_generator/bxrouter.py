@@ -22,7 +22,7 @@ class Router(object):
         self.is_public = is_public
         self.is_post = is_post
         parse_result = urlparse.urlparse(req)
-        self.query_dict = urlparse.parse_qs(parse_result.query)
+        self.query_dict = urlparse.parse_qs(parse_result.query, keep_blank_values=True)
         path_comps = parse_result.path.split('/')
         self.path_comps = path_comps
         if len(path_comps) > 2:
@@ -83,6 +83,7 @@ class Router(object):
             return 'case .%s(let params): return params' % self.name
 
 router_pattern = re.compile(r'(?P<req>[^,;\(\)]+)(?:\((?P<attrs>[\w=,]+)\))?')
+model_pattern = re.compile(r'(?P<name>\w+)(?:\((?P<attrs>[\w=,]+)\))?')
 
 def parse_route_info(info):
     parts = re.split(':', info.strip())
