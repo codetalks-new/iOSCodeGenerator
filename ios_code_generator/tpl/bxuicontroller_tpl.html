@@ -2,8 +2,11 @@ import UIKit
 import SwiftyJSON
 import Bond
 import CocoaLumberjack
-import BXModel
 import PromiseKit
+import BXModel
+import BXiOSUtils
+import Kingfisher
+import BXForm
 
 {% for comment in comments %}
 {{ comment }}
@@ -47,6 +50,7 @@ class {{ model.class_name }} : {{model.superclass}} {
 
     override func viewDidLoad() {
     super.viewDidLoad()
+    navigationItem.title = ""
     {{ model.adapter_init }}
 
     {% if model.is_tvc %}
@@ -65,16 +69,25 @@ class {{ model.class_name }} : {{model.superclass}} {
         let pageSize = 20
         var page = 1
         var hasMore = true
+        var offset = 0
         {% endif %}
         func loadData(){
-        request(ApiRouter.).responseApiResponse{ (resp:ApiResponse) in
-        if resp.ok{
-        self.handleResponse(resp)
-        }
-        }
+            let params:Params = [
+                "page":page,
+                "offset":offset
+            ]
+            request(ApiRouter.).responseApiResponse{ (resp:ApiResponse) in
+                if resp.ok{
+                self.handleResponse(resp)
+                }
+            }
         }
         func handleResponse(resp:ApiResponse){
-
+            {% if model.has_attr('adapter') %}
+            let data = resp.data
+            let items = {{model.vc_mname}}.arrayFrom(data)
+            adapter.updateItems(items)
+            {% endif %}
         }
     {%  endif %}
 

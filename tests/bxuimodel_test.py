@@ -16,7 +16,12 @@ class MyTestCase(unittest.TestCase):
         bxuimodel.main()
 
     def test_viewController(self):
-        strio = StringIO(u"-User(m=ProductItem,req,adapter):tc\nauthor[y,l15,w36,a1]:i;bg[t,l,r,b]:i;title(f14,cw);id[x,y](ch):l;url(cwa):b;mobile:f;bgView(cwa):v")
+        strio = StringIO(u'''
+        -DiscoverViewController(m=DiscoverItem,req,adapter=c,page):vc
+        slide[t0,hor0,h180]
+        _[hor0,t0,b0]:c
+        ''')
+        # strio = StringIO(u"-User(m=ProductItem,req,adapter):tc\nauthor[y,l15,w36,a1]:i;bg[t,l,r,b]:i;title(f14,cw);id[x,y](ch):l;url(cwa):b;mobile:f;bgView(cwa):v")
         sys.stdin = strio
         text = core.generate('uicontroller')
         print(text)

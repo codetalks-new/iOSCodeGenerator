@@ -16,6 +16,8 @@ char_type_map = {
     't': 'UITableView',
     's': 'UIScrollView',
     'c': 'UICollectionView',
+    'cr': 'UICollectionReusableView',
+    'p': 'UIPickerView',
     'cb': 'CheckboxButton',
     'ib': 'IconButton',
     'sb': 'UISearchBar',
@@ -27,7 +29,14 @@ char_type_map = {
     'sc': 'UISegmentedControl',
     'tc': 'UITableViewCell',
     'stc': 'StaticTableViewCell',
+    'src': 'StarRatingControl',
     'tb': 'UIToolbar',
+    'tv': 'UITextView',
+    'il': 'IconLabel',
+    'ci': 'CircleImageView',
+    'wv': 'WKWebView',
+    'gbb': 'GroupButtonBar',
+    'oi': 'OutlineImageView'
 }
 
 type_value_field_map = {
@@ -47,6 +56,7 @@ view_designed_init_map = {
     'b': 'UIButton(type:.System)',
     'c': ' UICollectionView(frame: CGRectZero, collectionViewLayout: UICollectionViewFlowLayout())',
     'sb': 'UISearchBar()',
+    'gbb': 'GroupButtonBar(buttons:[])'
 }
 
 model_type_map = {
@@ -73,6 +83,9 @@ field_pin_map = {
     'h': 'pinHeight',
     'a': 'pinAspectRatio',
     'e': 'pinEdge',
+    'hor': 'pinHorizontal',
+    'ver': 'pinVertical',
+
 
 }
 
@@ -86,13 +99,18 @@ field_attr_map = {
     'fb': 'UIFont.boldSystemFontOfSize',
     'cdg': 'UIColor.darkGrayColor',
     'cdt': 'UIColor.darkTextColor',
+    'cdgt': '+AppColors.darkGrayTextColor',
+    'cpt': '+AppColors.primaryTextColor',
+    'cst': '+AppColors.secondaryTextColor',
+    'ctt': '+AppColors.tertiaryTextColor',
+    'cht': '+AppColors.hintTextColor',
     'cg': 'UIColor.grayColor',
     'clg': 'UIColor.lightGrayColor',
     'cb': 'UIColor.blackColor',
     'cw': 'UIColor.whiteColor',
     'cwa': '+UIColor(white: 1.0, alpha: 1.0)',
     'ch': '+UIColor(hex:0xabc)',
-    'ca': '+AppColors.colorAccent',
+    'ca': '+AppColors.accentColor',
     'bp': 'setBackgroundImage(UIImage.Asset.ButtonPrimary.image,forState:.Normal)'
 }
 
@@ -297,9 +315,23 @@ class UIField(object):
         frame_init = '{type_class}(frame:CGRectZero)'.format(type_class=self.type_class)
         construct_exp = view_designed_init_map.get(self.ftype, frame_init)
         stmt = ' let {field_name} = {construct_exp}'.format(field_name=self.field_name, construct_exp=construct_exp)
+        if self.ftype == 'tc':
+            stmt = '''
+            lazy var {field_name} : UITableViewCell = '''.format(field_name=self.field_name)
+            stmt += '''{
+            let cell = UITableViewCell()
+            return cell
+            }()
+            '''
+
         if self.ftype == 'c':
-            stmt += '''
-  private let flowLayout:UICollectionViewFlowLayout = {
+           stmt = ''' lazy var {field_name} :UICollectionView'''.format(field_name=self.field_name)
+           stmt +=''' = { [unowned self] in
+            return UICollectionView(frame: CGRectZero, collectionViewLayout: self.flowLayout)
+      }()
+            '''
+           stmt += '''
+  private lazy var flowLayout:UICollectionViewFlowLayout = {
       let flowLayout = UICollectionViewFlowLayout()
       flowLayout.minimumInteritemSpacing = 10
       flowLayout.itemSize = CGSize(width:100,height:100)

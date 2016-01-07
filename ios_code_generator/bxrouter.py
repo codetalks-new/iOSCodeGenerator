@@ -23,7 +23,7 @@ class Router(object):
         self.is_post = is_post
         parse_result = urlparse.urlparse(req)
         self.query_dict = urlparse.parse_qs(parse_result.query, keep_blank_values=True)
-        path_comps = parse_result.path.split('/')
+        path_comps = [p for p in parse_result.path.split('/') if p]
         self.path_comps = path_comps
         if len(path_comps) > 2:
             if "id" in path_comps[-2] and path_comps[-1].isdigit():

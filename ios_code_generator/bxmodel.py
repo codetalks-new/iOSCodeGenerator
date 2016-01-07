@@ -21,13 +21,20 @@ char_type_map = {
     '[f': 'Array',
     '[d': 'Array',
     '[b': 'Array',
+    '[r': 'RefArray'
 }
 
 
 def _field_name_to_type_name(field_name):
     words = re.split('_', field_name)
+    if len(words) == 1 and field_name[0].isupper():
+        return field_name
     return ''.join([word.capitalize() for word in words if word])
 
+def _format_ref_field_name(field_name):
+    if field_name[0].isupper():
+        return field_name[0].lower() + field_name[1:]
+    return field_name
 
 def parse_field_info(field_info):
     parts = re.split(':', field_info.strip())
@@ -45,6 +52,7 @@ def parse_field_info(field_info):
     if len(ftype) == 1:
         if ftype == 'r':
             type_name = _field_name_to_type_name(fname)
+            fname = _format_ref_field_name(fname)
             declare = '    let {fname}:{type_class} '.format(fname=fname, type_class=type_name)
             stmt = ' self.{fname} = {type_name}(json:json["{fname}"])'.format(fname=fname, type_name=type_name)
             dict_stmt = 'dict["{fname}"] = self.{fname}.toDict()'.format(fname=fname)
@@ -64,8 +72,16 @@ def parse_field_info(field_info):
         type_char = ftype[1]
         raw_type_class = char_type_map.get(type_char, 'String')
         if type_complex == '[':
-            declare = ' let {fname}:[{type_class}]'.format(fname=fname,type_class=raw_type_class)
-            stmt = '    self.{fname} = json["{fname}"].arrayObject as? [{type_class}] ?? []'\
+            if type_char == 'r':
+                type_name = _field_name_to_type_name(fname)
+                fname = _format_ref_field_name(fname)
+                declare = ' let {fname}:[{type_class}]'.format(fname=fname,type_class=type_name)
+                stmt = '    self.{fname} = {type_class}.arrayFrom(json["{fname}"])' \
+                    .format(fname=fname, type_class=type_name)
+                dict_stmt = 'dict["{fname}"] = self.{fname}'.format(fname=fname)+".map{ $0.toDict() }"
+            else:
+                declare = ' let {fname}:[{type_class}]'.format(fname=fname,type_class=raw_type_class)
+                stmt = '    self.{fname} = json["{fname}"].arrayObject as? [{type_class}] ?? []'\
                 .format(fname=fname, type_class=raw_type_class)
         elif type_complex == 'd':
             tmp_value_stmt_tpl = '  let tmp_{fname}_value = json["{fname}"].{json_type}Value '
@@ -129,7 +145,7 @@ import SwiftyJSON
 import BXModel
 // Model Class Generated from templates
 $comment_stmts
-class $model_name:BXModel {
+struct $model_name:BXModel {
     $declare_stmts
 
     required init(json:JSON){
