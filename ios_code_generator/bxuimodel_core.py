@@ -31,6 +31,7 @@ char_type_map = {
     'stc': 'StaticTableViewCell',
     'src': 'StarRatingControl',
     'tb': 'UIToolbar',
+    'ctb': 'ConfirmTitleBar',
     'tv': 'UITextView',
     'il': 'IconLabel',
     'ci': 'CircleImageView',
