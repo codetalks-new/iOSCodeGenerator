@@ -24,19 +24,27 @@ enum ApiRouter:URLRequestConvertible{
     }
 
     var method:Alamofire.Method{
+        {% if post_routers|count > 0 %}
         switch self{
         case {{ post_routers|map(attribute='dot_name')|join(',') }}:
             return .POST
         default:
             return .GET
         }
+        {% else %}
+        return .GET
+        {% endif %}
     }
     var isPublic:Bool{
+        {% if public_routers|count > 0 %}
         switch self{
         case {{ public_routers|map(attribute='dot_name')|join(',') }}:
             return true
         default:return false
         }
+        {% else %}
+        return false
+        {% endif %}
     }
 
     var URLRequest: NSMutableURLRequest {

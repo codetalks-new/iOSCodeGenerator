@@ -3,6 +3,7 @@ __author__ = 'banxi'
 import sys
 import re
 import urlparse
+from . import utils
 
 FIELD_DELIMETER = ';'
 
@@ -10,10 +11,6 @@ FIELD_DELIMETER = ';'
 # User(/)
 
 # api/product/isuser_product?id=24351
-
-def _to_snake_case(name):
-    words = name.split("_")
-    return ''.join([word.capitalize() for word in words if word])
 
 
 class Router(object):
@@ -35,7 +32,7 @@ class Router(object):
         if path_comps[0] == 'api':
             path_comps = path_comps[1:]
 
-        self.name = ''.join([_to_snake_case(comp) for comp in path_comps if comp])
+        self.name = ''.join([utils.snakelize(comp) for comp in path_comps if comp])
 
     @property
     def dot_name(self):
