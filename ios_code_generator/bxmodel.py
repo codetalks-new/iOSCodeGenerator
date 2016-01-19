@@ -171,5 +171,17 @@ struct $model_name:BXModel {
 
     sys.stdout.write(model_class_stmt)
 
+def json_to_fields():
+    from . import converters
+    input = sys.stdin.read()
+    if isinstance(input,str):
+        text = input.decode(encoding='utf-8')
+    else:
+        text = input
+    fields = converters.convert_text_to_field_list(text)
+    output = ','.join(fields)
+    sys.stdout.write(output)
+
+
 if __name__ == '__main__':
     main()

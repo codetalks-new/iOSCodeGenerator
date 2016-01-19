@@ -19,6 +19,11 @@ class MyTestCase(unittest.TestCase):
         sys.stdin = strio
         bxmodel.main()
 
+    def test_json2fields(self):
+        strio = StringIO(u''' "id":"20", "name":"\u4e1c\u76df\u7ecf\u6d4e\u5f00\u53d1\u533a", "distrct":[ ] ''')
+        sys.stdin = strio
+        bxmodel.json_to_fields()
+
 
 
 if __name__ == '__main__':
