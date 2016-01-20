@@ -148,7 +148,7 @@ $comment_stmts
 struct $model_name:BXModel {
     $declare_stmts
 
-    required init(json:JSON){
+    init(json:JSON){
         $init_func_stmts
     }
 

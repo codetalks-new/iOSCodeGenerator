@@ -5,10 +5,11 @@ __author__ = 'banxi'
 import re
 import sys
 from collections import namedtuple
+from . import utils
 
 FIELD_DELIMETER = ';'
 
-char_type_map = {
+ui_field_type_map = {
     'l': 'UILabel',
     'b': 'UIButton',
     'v': 'UIView',
@@ -35,33 +36,37 @@ char_type_map = {
     'ctb': 'ConfirmTitleBar',
     'tv': 'UITextView',
     'il': 'IconLabel',
-    'ci': 'CircleImageView',
+    'ci': 'OvalImageView',
     'wv': 'WKWebView',
     'gbb': 'GroupButtonBar',
     'oi': 'OutlineImageView'
 }
 
-type_value_field_map = {
+ui_image_field_types = [
+    'i','oi','ci'
+]
+
+ui_type_value_field_map = {
     'l': 'text',
     'f': 'text',
     'sw': 'on',
 }
 
-type_value_type_map = {
+ui_type_value_type_map = {
     'l': 'String',
     'f': 'String',
     'sw': 'Bool'
 }
 
 ### UIModel specifie
-view_designed_init_map = {
+ui_view_designed_init_map = {
     'b': 'UIButton(type:.System)',
     'c': ' UICollectionView(frame: CGRectZero, collectionViewLayout: UICollectionViewFlowLayout())',
     'sb': 'UISearchBar()',
     'gbb': 'GroupButtonBar(buttons:[])'
 }
 
-model_type_map = {
+ui_model_type_map = {
     'v': 'UIView',
     't': 'UITableView',
     's': 'UIScrollView',
@@ -74,7 +79,7 @@ model_type_map = {
     'tabvc': 'BaseUITabBarController',
 }
 
-field_pin_map = {
+ui_field_pin_map = {
     'x': 'pinCenterX',
     'y': 'pinCenterY',
     'l': 'pinLeading',
@@ -87,16 +92,28 @@ field_pin_map = {
     'e': 'pinEdge',
     'hor': 'pinHorizontal',
     'ver': 'pinVertical',
-
-
 }
 
-vc_pin_map = {
+ui_field_pa_map = {
+    'x': 'pa_centerX',
+    'y': 'pa_centerY',
+    'l': 'pa_leading',
+    't': 'pa_top',
+    'r': 'pa_trailing',
+    'b': 'pa_bottom',
+    'w': 'pa_width',
+    'h': 'pa_height',
+    'a': 'pa_aspectRatio',
+    'e': 'pac_edge',
+    'hor': 'pac_horizontal',
+    'ver': 'pac_vertical',
+}
+ui_vc_pin_map = {
     't': 'pinTopLayoutGuide',
     'b': 'pinBottomLayoutGuide'
 }
 
-field_attr_map = {
+ui_field_attr_map = {
     'f': 'UIFont.systemFontOfSize',
     'fb': 'UIFont.boldSystemFontOfSize',
     'cdg': 'UIColor.darkGrayColor',
@@ -150,7 +167,7 @@ class ModelDecl(object):
         self.name = name
         self.mtype = mtype
         self.model_config = dict((item.ctype, item.value) for item in config_items)
-        self.superclass = model_type_map.get(mtype, 'UIView')
+        self.superclass = ui_model_type_map.get(mtype, 'UIView')
 
     def has_attr(self, attr):
         return attr in self.model_config
@@ -230,29 +247,54 @@ class ModelDecl(object):
 
 class UIField(object):
     def __init__(self, name, ftype, constraints, attrs):
-        self.model = None
-        type_class = char_type_map.get(ftype, 'UILabel')
-        pure_type_name = type_class.replace('UI', '')
-        if ftype == 'tc':
-            pure_type_name = 'Cell'
-        self.ftype = ftype
-        if name == '_':
-            self.field_name = _to_camelCase_varName(pure_type_name)
-        else:
-            if name.endswith('_'):
-                self.field_name = name[:-1]
-            else:
-                self.field_name = "{name}{type_name}".format(name=name, type_name=pure_type_name)
         self.name = name
-        self.type_class = type_class
+        self.ftype = ftype
         self.constraints = dict((item.ctype, item.value) for item in constraints)
         self.attrs = dict((item.ctype, item.value) for item in attrs)
+        self.model = None
         self.in_vc = 'controller' in target
+
+
+    @property
+    def type_class(self):
+        return ui_field_type_map.get(self.ftype, 'UILabel')
+
+    @property
+    def field_name(self):
+        ''' deprecated '''
+        return self.ui_field_name
+
+    @property
+    def ui_field_name(self):
+        pure_type_name = self.type_class.replace('UI', '')
+        if self.ftype == 'tc':
+            pure_type_name = 'Cell'
+
+        if self.name == '_':
+            return _to_camelCase_varName(pure_type_name)
+        else:
+            if self.name.endswith('_'):
+                return self.name[:-1]
+            else:
+                return  "{name}{type_name}".format(name=self.name, type_name=pure_type_name)
+
+    @property
+    def snake_name(self):
+        return utils.snakelize(self.name)
+
+    @property
+    def camel_name(self):
+       return utils.camelize(self.name)
 
     ### MARK: for Enum
     @property
+    def enum_name(self):
+        return self.snake_name
+
+    @property
     def cap_name(self):
-        return self.name.capitalize()
+        # for Enum v1
+        return self.snake_name
 
     @property
     def enum_title(self):
@@ -327,7 +369,7 @@ class UIField(object):
 
     @property
     def has_value(self):
-        return self.ftype in type_value_field_map
+        return self.ftype in ui_type_value_field_map
 
     @property
     def extract_value_stmt(self):
@@ -345,8 +387,8 @@ class UIField(object):
 
     @property
     def set_value_stmt(self):
-        if self.ftype in type_value_field_map:
-            value_field = type_value_field_map.get(self.ftype, 'text')
+        if self.ftype in ui_type_value_field_map:
+            value_field = ui_type_value_field_map.get(self.ftype, 'text')
             ctx = dict(name=self.name, field_name=self.field_name, value_field=value_field)
             return ' {field_name}.{value_field}  = model.{name} '.format(**ctx)
 
@@ -363,7 +405,7 @@ class UIField(object):
 
     @property
     def check_value_stmt(self):
-        if self.ftype in type_value_field_map and self.is_required:
+        if self.ftype in ui_type_value_field_map and self.is_required:
             stmt = 'try Validators.checkText(typeValue)'
             return stmt
         else:
@@ -371,12 +413,12 @@ class UIField(object):
 
     @property
     def can_set_value(self):
-        return self.ftype in type_value_field_map
+        return self.ftype in ui_type_value_field_map
 
     @property
     def value_type(self):
         if self.has_value:
-            return type_value_type_map[self.ftype]
+            return ui_type_value_type_map[self.ftype]
         else:
             return ''
 
@@ -389,15 +431,15 @@ class UIField(object):
 
     @property
     def can_bind_value(self):
-        return self.has_value or self.ftype in ['i']  ## image can bind value
+        return self.has_value or self.ftype in ui_image_field_types  ## image can bind value
 
     @property
     def bind_value_stmt(self):
-        if self.ftype in type_value_field_map:
-            value_field = type_value_field_map.get(self.ftype, 'text')
+        if self.ftype in ui_type_value_field_map:
+            value_field = ui_type_value_field_map.get(self.ftype, 'text')
             ctx = dict(name=self.name, field_name=self.field_name, value_field=value_field)
             return ' {field_name}.{value_field}  = item.{name} '.format(**ctx)
-        elif self.ftype == 'i':  # UIImage NSURL
+        elif self.ftype in ui_image_field_types:  # UIImage NSURL
             ctx = dict(name=self.name, field_name=self.field_name)
             return ' {field_name}.kf_setImageWithURL(item.{name})'.format(**ctx)
         else:
@@ -406,7 +448,7 @@ class UIField(object):
     @property
     def declare_stmt(self):
         frame_init = '{type_class}(frame:CGRectZero)'.format(type_class=self.type_class)
-        construct_exp = view_designed_init_map.get(self.ftype, frame_init)
+        construct_exp = ui_view_designed_init_map.get(self.ftype, frame_init)
         stmt = ' let {field_name} = {construct_exp}'.format(field_name=self.field_name, construct_exp=construct_exp)
         if self.ftype == 'tc':
             stmt = '''
@@ -444,14 +486,14 @@ class UIField(object):
         c_stmts = []
 
         for ctype, value in self.constraints.iteritems():
-            func_name = field_pin_map.get(ctype)
+            func_name = ui_field_pin_map.get(ctype)
             if func_name:
                 complex_value = value
                 if ctype == 'e':
                     complex_value = 'UIEdgeInsets(top: {value}, left: {value}, bottom: {value}, right: {value})'.format(
                         value=value)
-                if self.in_vc and (ctype in vc_pin_map):
-                    ctx = dict(func_name=vc_pin_map[ctype], view=self.field_name, value=complex_value)
+                if self.in_vc and (ctype in ui_vc_pin_map):
+                    ctx = dict(func_name=ui_vc_pin_map[ctype], view=self.field_name, value=complex_value)
                     stmt = '{func_name}({view},margin:{value})'.format(**ctx)
                 else:
                     ctx = dict(field_name=self.field_name, func_name=func_name, value=complex_value)
@@ -467,7 +509,7 @@ class UIField(object):
             return ''
         stmts = []
         for ctype, value in self.attrs.iteritems():
-            func_name = field_attr_map.get(ctype)
+            func_name = ui_field_attr_map.get(ctype)
             if not func_name:
                 continue
             no_param = func_name.startswith('+')
