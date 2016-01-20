@@ -22,5 +22,5 @@ def camelize_word(word):
 
 
 def camelize(field_name):
-    words = re.split('[_-]', field_name)
-    return ''.join([camelize_word(word) for word in words if word])
+    name = snakelize(field_name)
+    return camelize_word(name)

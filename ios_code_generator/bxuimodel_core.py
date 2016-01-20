@@ -271,7 +271,7 @@ class UIField(object):
             pure_type_name = 'Cell'
 
         if self.name == '_':
-            return _to_camelCase_varName(pure_type_name)
+            return utils.camelize(pure_type_name)
         else:
             if self.name.endswith('_'):
                 return self.name[:-1]
