@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import  unicode_literals
 __author__ = 'banxi'
 
 import re
@@ -120,6 +121,15 @@ enum_raw_type_map = {
     's': 'String'
 }
 
+settings_raw_type_map = {
+    'i':'Int',
+    's':'String',
+    'b': 'Bool',
+    'f': 'Double',
+    'u': 'NSURL',
+    'd': 'NSDate',
+}
+
 
 # label:l,label2,button:b,view:v,imageView:i,field:f,addr:tc
 def _to_camel_style(word):
@@ -191,6 +201,12 @@ class ModelDecl(object):
             return self.name + 'ViewController'
         return self.name
 
+    @property
+    def prefix(self):
+        return self.model_config.get('prefix','')
+
+
+
     ##################################
     ## Enum Support
     ##################################
@@ -199,9 +215,22 @@ class ModelDecl(object):
     def raw_type(self):
         return enum_raw_type_map.get(self.mtype)
 
+    ##### Defaults Support
+    @property
+    def settings_prefix(self):
+        return self.prefix
+
+    @property
+    def settings_sync_on_save(self):
+        value = self.model_config.get('sync_on_save','true').lower()
+        if value in ['1','t','true','on']:
+            return True
+        return False
+
 
 class UIField(object):
     def __init__(self, name, ftype, constraints, attrs):
+        self.model = None
         type_class = char_type_map.get(ftype, 'UILabel')
         pure_type_name = type_class.replace('UI', '')
         if ftype == 'tc':
@@ -220,6 +249,7 @@ class UIField(object):
         self.attrs = dict((item.ctype, item.value) for item in attrs)
         self.in_vc = 'controller' in target
 
+    ### MARK: for Enum
     @property
     def cap_name(self):
         return self.name.capitalize()
@@ -227,6 +257,68 @@ class UIField(object):
     @property
     def enum_title(self):
         return self.ftype
+
+    ### MARK: For Settings
+
+    @property
+    def settings_name(self):
+        return self.name
+
+    @property
+    def settings_key(self):
+        prefix = self.model.prefix
+        if prefix:
+            return "%s_%s" % (prefix, self.name)
+        else:
+            return self.name
+
+    @property
+    def settings_type(self):
+        return settings_raw_type_map.get(self.ftype,'String')
+
+    @property
+    def settings_type_annotation(self):
+        t = self.settings_type
+        if self.ftype in ['b','i','f']:
+            return t
+        else:
+            return t+"?"
+
+    @property
+    def settings_setter_type(self):
+        map = {
+            'i':'Integer',
+            'b':'Bool',
+            'f':'Double',
+            'u':'URL'
+        }
+        return map.get(self.ftype,'Object')
+
+    @property
+    def settings_getter_type(self):
+        map = {
+            'i':'integer',
+            'b':'bool',
+            'f':'double',
+            'u':'URL',
+            's':'string'
+        }
+        return map.get(self.ftype,'object')
+
+    @property
+    def settings_set_stmt(self):
+        type = self.settings_setter_type
+        key = 'Keys.%s' % self.settings_name
+        return 'userDefaults.set%s(newValue,forKey:%s)' % (type,key)
+
+    @property
+    def settings_get_stmt(self):
+        type = self.settings_getter_type
+        key = 'Keys.%s' % self.settings_name
+        stmt = 'return userDefaults.%sForKey(%s)' % (type,key)
+        if self.ftype == 'd':
+            stmt += " as? NSDate"
+        return stmt
 
     @property
     def outlet(self):
@@ -494,9 +586,6 @@ target = 'uimodel'
 def generate(target='uimodel', **options):
     globals()['target'] = target
     print("// Build for target " + target)
-    import locale
-    print("//locale %s" % repr(locale.getlocale()))
-    locale_info = repr(locale.getlocale())
     uifield_list = []
     comments = []
     last_model_decl = None
@@ -512,9 +601,10 @@ def generate(target='uimodel', **options):
             uifields = parse_line(line)
             if uifields:
                 uifield_list.extend(uifields)
+    for field in uifield_list:
+        field.model = last_model_decl
     from .helper import jinja2_env
     template = jinja2_env.get_template('bx%s_tpl.html' % target)
     has_textfield = len([field for field in uifield_list if field.ftype == 'f']) > 0
-    locale_info.encode(encoding='utf-8')
     text = template.render(model=last_model_decl, uifields=uifield_list, has_textfield=has_textfield, comments=comments)
     return text.encode('utf-8')

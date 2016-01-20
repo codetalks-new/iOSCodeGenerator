@@ -1,0 +1,25 @@
+{% for comment in comments %}
+{{ comment }}
+{% endfor %}
+
+struct {{ model.class_name }} {
+    struct Keys{
+    {%  for uifield in uifields %}
+        static let {{uifield.settings_name}} = "{{uifield.settings_key}}"
+    {% endfor %}
+    }
+
+    static let  userDefaults = NSUserDefaults.standardUserDefaults()
+{%  for uifield in uifields %}
+    static var {{uifield.name}}:{{uifield.settings_type_annotation}}{
+        set{
+            {{uifield.settings_set_stmt}}
+            {% if model.settings_sync_on_save %}
+            userDefaults.synchronize()
+            {% endif %}
+        }get{
+            {{uifield.settings_get_stmt}}
+        }
+    }
+{% endfor %}
+}
