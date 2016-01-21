@@ -3,7 +3,7 @@ from __future__ import  unicode_literals
 __author__ = 'banxi'
 
 import re
-
+import sys
 
 def snakelize_word(name):
     ''' userLike -> UserLike '''
@@ -24,3 +24,14 @@ def camelize_word(word):
 def camelize(field_name):
     name = snakelize(field_name)
     return camelize_word(name)
+
+def readlines_from_stdin():
+    lines = []
+    for line in sys.stdin:
+        line = line.strip()
+        if not line:
+            continue
+        if isinstance(line, str):
+            line = line.decode(encoding='utf-8')
+        lines.append(line)
+    return lines

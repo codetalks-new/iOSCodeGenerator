@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 __author__ = 'banxi'
-from .bxuimodel_core import generate
+from ios_code_generator.generators import generate
 
 
 def main():

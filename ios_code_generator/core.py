@@ -1,151 +1,14 @@
 # -*- coding: utf-8 -*-
+from ios_code_generator.maps import ui_field_type_map, ui_image_field_types, ui_button_field_types, \
+    ui_type_value_field_map, ui_type_value_type_map, ui_view_designed_init_map, ui_model_type_map, ui_field_attr_map, \
+    enum_raw_type_map, settings_raw_type_map
+
 __author__ = 'banxi'
 
-
-import re
-import sys
-from collections import namedtuple
 from . import utils
 
-FIELD_DELIMETER = ';'
-
-ui_field_type_map = {
-    'l': 'UILabel',
-    'b': 'UIButton',
-    'v': 'UIView',
-    'i': 'UIImageView',
-    'f': 'UITextField',
-    't': 'UITableView',
-    's': 'UIScrollView',
-    'c': 'UICollectionView',
-    'cr': 'UICollectionReusableView',
-    'p': 'UIPickerView',
-    'cb': 'CheckboxButton',
-    'ib': 'IconButton',
-    'sb': 'UISearchBar',
-    'pc': 'UIPageControl',
-    'dp': 'UIDatePicker',
-    'st': 'UIStepper',
-    'sw': 'UISwitch',
-    'sl': 'UISlider',
-    'sc': 'UISegmentedControl',
-    'tc': 'UITableViewCell',
-    'stc': 'StaticTableViewCell',
-    'src': 'StarRatingControl',
-    'tb': 'UIToolbar',
-    'ctb': 'ConfirmTitleBar',
-    'tv': 'UITextView',
-    'il': 'IconLabel',
-    'ci': 'OvalImageView',
-    'wv': 'WKWebView',
-    'gbb': 'GroupButtonBar',
-    'oi': 'OutlineImageView'
-}
-
-ui_image_field_types = [
-    'i','oi','ci'
-]
-
-ui_type_value_field_map = {
-    'l': 'text',
-    'f': 'text',
-    'sw': 'on',
-}
-
-ui_type_value_type_map = {
-    'l': 'String',
-    'f': 'String',
-    'sw': 'Bool'
-}
 
 ### UIModel specifie
-ui_view_designed_init_map = {
-    'b': 'UIButton(type:.System)',
-    'c': ' UICollectionView(frame: CGRectZero, collectionViewLayout: UICollectionViewFlowLayout())',
-    'sb': 'UISearchBar()',
-    'gbb': 'GroupButtonBar(buttons:[])'
-}
-
-ui_model_type_map = {
-    'v': 'UIView',
-    't': 'UITableView',
-    's': 'UIScrollView',
-    'c': 'UICollectionView',
-    'tc': 'UITableViewCell',
-    'stc': 'StaticTableViewCell',
-    'cc': 'UICollectionViewCell',
-    'vc': 'BaseUIViewController',
-    'tvc': 'BaseUITableViewController',
-    'tabvc': 'BaseUITabBarController',
-}
-
-ui_field_pin_map = {
-    'x': 'pinCenterX',
-    'y': 'pinCenterY',
-    'l': 'pinLeading',
-    't': 'pinTop',
-    'r': 'pinTrailing',
-    'b': 'pinBottom',
-    'w': 'pinWidth',
-    'h': 'pinHeight',
-    'a': 'pinAspectRatio',
-    'e': 'pinEdge',
-    'hor': 'pinHorizontal',
-    'ver': 'pinVertical',
-}
-
-ui_field_pa_map = {
-    'x': 'pa_centerX',
-    'y': 'pa_centerY',
-    'l': 'pa_leading',
-    't': 'pa_top',
-    'r': 'pa_trailing',
-    'b': 'pa_bottom',
-    'w': 'pa_width',
-    'h': 'pa_height',
-    'a': 'pa_aspectRatio',
-    'e': 'pac_edge',
-    'hor': 'pac_horizontal',
-    'ver': 'pac_vertical',
-}
-ui_vc_pin_map = {
-    't': 'pinTopLayoutGuide',
-    'b': 'pinBottomLayoutGuide'
-}
-
-ui_field_attr_map = {
-    'f': 'UIFont.systemFontOfSize',
-    'fb': 'UIFont.boldSystemFontOfSize',
-    'cdg': 'UIColor.darkGrayColor',
-    'cdt': 'UIColor.darkTextColor',
-    'cdgt': '+AppColors.darkGrayTextColor',
-    'cpt': '+AppColors.primaryTextColor',
-    'cst': '+AppColors.secondaryTextColor',
-    'ctt': '+AppColors.tertiaryTextColor',
-    'cht': '+AppColors.hintTextColor',
-    'cg': 'UIColor.grayColor',
-    'clg': 'UIColor.lightGrayColor',
-    'cb': 'UIColor.blackColor',
-    'cw': 'UIColor.whiteColor',
-    'cwa': '+UIColor(white: 1.0, alpha: 1.0)',
-    'ch': '+UIColor(hex:0xabc)',
-    'ca': '+AppColors.accentColor',
-    'bp': 'setBackgroundImage(UIImage.Asset.ButtonPrimary.image,forState:.Normal)'
-}
-
-enum_raw_type_map = {
-    'i': 'Int',
-    's': 'String'
-}
-
-settings_raw_type_map = {
-    'i':'Int',
-    's':'String',
-    'b': 'Bool',
-    'f': 'Double',
-    'u': 'NSURL',
-    'd': 'NSDate',
-}
 
 
 # label:l,label2,button:b,view:v,imageView:i,field:f,addr:tc
@@ -240,13 +103,16 @@ class ModelDecl(object):
             return True
         return False
 
+    def create_env(self):
+        from .enviroment import  Environment
+        return  Environment(self,self.fields)
 
 class UIField(object):
     def __init__(self, name, ftype, constraints, attrs):
         self.name = name
         self.ftype = ftype
-        self.constraints = dict((item.ctype, item.value) for item in constraints)
-        self.attrs = dict((item.ctype, item.value) for item in attrs)
+        self.constraints = dict((item.ctype, item) for item in constraints)
+        self.attrs = dict((item.ctype, item) for item in attrs)
         self.model = None
 
     @property
@@ -316,7 +182,7 @@ class UIField(object):
 
     @property
     def settings_type(self):
-        return settings_raw_type_map.get(self.ftype,'String')
+        return settings_raw_type_map.get(self.ftype, 'String')
 
     @property
     def settings_type_annotation(self):
@@ -481,61 +347,23 @@ class UIField(object):
 
     @property
     def constraints_stmt(self):
-        if not self.constraints:
-            return ''
-        c_stmts = []
+        env = self.model.create_env()
+        return env.generate_install_constraint_stmts(self)
 
-        for ctype, value in self.constraints.iteritems():
-            func_name = ui_field_pa_map.get(ctype)
-            if func_name:
-                complex_value = value
-                if ctype == 'e':
-                    complex_value = 'UIEdgeInsets(top: {value}, left: {value}, bottom: {value}, right: {value})'.format(
-                            value=value)
-                if self.in_vc and (ctype in ui_vc_pin_map):
-                    ctx = dict(func_name=ui_vc_pin_map[ctype], view=self.field_name, value=complex_value)
-                    stmt = '{func_name}({view},margin:{value})'.format(**ctx)
-                else:
-                    ctx = dict(field_name=self.field_name, func_name=func_name, value=complex_value)
-                    stmt = '{field_name}.{func_name}({value})'.format(**ctx)
-                c_stmts.append(stmt)
-        if c_stmts:
-            c_stmts.append('')
-        return '\n'.join(c_stmts)
 
     @property
     def attrs_stmt(self):
         if not self.attrs:
             return ''
         stmts = []
-        for ctype, value in self.attrs.iteritems():
-            func_name = ui_field_attr_map.get(ctype)
-            if not func_name:
-                continue
-            no_param = func_name.startswith('+')
-            if no_param:
-                func_name = func_name.replace('+', '')
-            prop_name = 'font' if ctype.startswith('f') else 'textColor'
-            if self.ftype == 'v':
-                # UIView
-                prop_name = 'backgroundColor'
-            if ctype.startswith('b'):
-                prop_name = ''  # UIButton property
-            ctx = dict(field_name=self.field_name, prop_name=prop_name, func_name=func_name)
-            if no_param:
-                if self.ftype == 'b':
-                    # UIButton
-                    stmt = '{field_name}.setTitleColor({func_name}, forState: .Normal)'.format(**ctx)
-                else:
-                    stmt = '{field_name}.{prop_name} = {func_name}'.format(**ctx)
-            else:
-                ctx['value'] = value
-                if self.ftype == 'b':
-                    # UIButton
-                    stmt = '{field_name}.setTitleColor({func_name}({value}), forState: .Normal)'.format(**ctx)
-                else:
-                    stmt = '{field_name}.{prop_name} = {func_name}({value})'.format(**ctx)
-            stmts.append(stmt)
-
-        return '\n'.join(stmts)
+        for ctype, item in self.attrs.iteritems():
+            stmt = item.generate_bind_attr_value_stmt(self)
+            if stmt:
+                stmts.append(stmt)
+        if stmts:
+            text = '\n'.join(stmts)
+            text += '\n'
+            return text
+        else:
+            return ''
 

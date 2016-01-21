@@ -46,9 +46,7 @@ func trySave(){
 
     func setFormValueWith(model:Model){
     {% for field in uifields %}
-        {% if field.has_value %}
-            {{field.set_value_stmt}}
-        {% endif %}
+        {% if field.has_value %} {{field.set_value_stmt}} {% endif %}
     {% endfor %}
     }
 

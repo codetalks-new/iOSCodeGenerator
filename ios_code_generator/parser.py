@@ -1,55 +1,38 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import re
+from ios_code_generator.enviroment import ConstraintConfigItem, ConfigItem
+
 __author__ = 'banxi'
 
-import re
-from collections import namedtuple
-import functools
 from .core import  *
 from . import utils
 
 
-constraint_config_valid_chars_re=r'[a-zA-Z0-9_@>=<]'
+FIELD_DELIMETER = ';'
 
 ''' match :`l>15@logo`,`l15`,`l25@logo` '''
-constraint_config_item_pattern = re.compile(r'(?P<ctype>[a-zA-Z]+)(?P<relation>[>=<])?(?P<value>\d+)(?:@(?P<secondItem>\w+))?')
+constraint_config_item_pattern = re.compile(r'(?P<ctype>[a-zA-Z]+)(?P<relation>[>=<])?(?P<value>\d+)?(?:@(?P<secondItem>\w+))?')
 ''' match `f14`,`color=#fff`,'''
-attr_config_item_pattern = re.compile(r'(?P<ctype>[a-zA-Z]+)(?:(?P<svalue>\d+)|(?:=(?P<cvalue>#?[\w]+)))?')
+attr_config_item_pattern = re.compile(r'(?P<ctype>[a-zA-Z]+)(?:(?P<svalue>\d+)|(?:=(?P<cvalue>#?[\w\u4e00-\u9fcc]+)))?')
 
-field_pattern = re.compile(r'(?P<fname>\w+)(?:\[(?P<constraints>[\w@>=<,]+)\])?(?:\((?P<attrs>[\w=#,]+)\))?')
+field_pattern = re.compile(r'(?P<fname>\w+)(?:\[(?P<constraints>[\w@>=<,]+)\])?(?:\((?P<attrs>[\w=#,\u4e00-\u9fcc]+)\))?')
 model_pattern = re.compile(r'(?P<name>\w+)(?:\((?P<attrs>[\w=,]+)\))?')
 int_value_pattern = re.compile(r'(?P<value>\d+)')
 
-
-ConfigItem = namedtuple('ConfigItem', ['ctype', 'value'])
-
-class ConstraintConfigItem(object):
-    """
-     解析布局约束的配置 : l>15@name
-    """
-    def __init__(self,ctype='l',relation='eq',secondItem=None,value=0):
-        self.ctype = ctype
-        self.relation = relation
-        self.secondItem = secondItem
-        self.value = value
 
 def parse_constraint_config_item(config):
     c = config.strip()
     m = constraint_config_item_pattern.match(c)
     groupdict = m.groupdict()
-    if groupdict['relation'] is None:
-        groupdict['relation'] = 'eq'
     item = ConstraintConfigItem(**groupdict)
     return item
 
 
-class ConfigItem(object):
-    '''Field 属性配置项 '''
-    def __init__(self,ctype,value,complex_value=None):
-        self.ctype = ctype
-        self.value = value
-        self.complex_value = complex_value
+def parse_constraint_config(config):
+    pairs = config.split(',') if config else []
+    return [parse_constraint_config_item(pair) for pair in pairs]
 
 
 def parse_field_config_item(config):
@@ -59,7 +42,7 @@ def parse_field_config_item(config):
     simple_value = groupdict['svalue']
     complex_value = groupdict['cvalue']
     ctype = groupdict['ctype']
-    return ConfigItem(ctype, simple_value,complex_value)
+    return ConfigItem(ctype, simple_value, complex_value)
 
 
 
@@ -68,6 +51,7 @@ def parse_field_config_item(config):
 def parse_field_config(config):
     pairs = config.split(',') if config else []
     return [parse_field_config_item(pair) for pair in pairs]
+
 
 
 def parse_field_info(field_info):
@@ -81,8 +65,8 @@ def parse_field_info(field_info):
     groupdict = matcher.groupdict()
     fname = groupdict.get('fname').replace('-', '_')
     constraints_config = groupdict.get('constraints')
-    constraints = parse_field_config(constraints_config)
     attrs_config = groupdict.get('attrs')
+    constraints = parse_constraint_config(constraints_config)
     attrs = parse_field_config(attrs_config)
 
     return UIField(fname, ftype, constraints, attrs)
@@ -111,7 +95,7 @@ def parse_model(line):
     return ModelDecl(model_name, mtype, config_items)
 
 
-def parse_line(line):
+def parse_field_line(line):
     field_infos = re.split(r';', line)
     uifields = []
     for field_info in field_infos:
@@ -124,15 +108,20 @@ def parse_line(line):
 
     return uifields
 
-def parse_lines(lines):
+def parse_field_lines(lines):
     fields = []
     for line in lines:
-       field_list = parse_line(line)
+       field_list = parse_field_line(line)
        fields.extend(field_list)
     return fields
 
 def parse_source(lines):
     model = parse_model(lines[0])
-    fields = parse_lines(lines)
+    field_lines = lines[1:]
+    fields = parse_field_lines(field_lines)
+    model.fields = fields
+    for field in fields:
+        field.model = model
     return model,fields
+
 

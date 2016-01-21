@@ -3,15 +3,18 @@ import unittest
 
 import os
 import sys
+
+
 sys.path.insert(0, os.path.basename('..'))
 from io import StringIO
 
+import ios_code_generator.generators
 from ios_code_generator import bxuimodel
 from ios_code_generator import bxuimodel_core as core
 
 class MyTestCase(unittest.TestCase):
     def test_viewModel(self):
-        strio = StringIO(u"-UserTableViewCell(m=User):tc\nauthor[y,l15,w36,a1]:i;bg[e0]:i;title(f14,cw);id[x,y](ch):l;url(cwa):b;mobile:f;bgView(cwa):v")
+        strio = StringIO(u"-UserTableViewCell(m=User):tc\nauthor[y,l15,w36,a1](tint=ca):i;bg[e0]:i;title[bl8@author](f14,cw,text=我的);id[x,y](ch):l;url(cwa):b;mobile:f;bgView(cwa):v")
         sys.stdin = strio
         bxuimodel.main()
 
@@ -23,29 +26,29 @@ class MyTestCase(unittest.TestCase):
         ''')
         # strio = StringIO(u"-User(m=ProductItem,req,adapter):tc\nauthor[y,l15,w36,a1]:i;bg[t,l,r,b]:i;title(f14,cw);id[x,y](ch):l;url(cwa):b;mobile:f;bgView(cwa):v")
         sys.stdin = strio
-        text = core.generate('uicontroller')
+        text = ios_code_generator.generators.generate('uicontroller')
         print(text)
 
     def test_enum(self):
         strio = StringIO(u"-User:s\nvideo;list;table;text;picture")
         sys.stdin = strio
-        text = core.generate('enum')
+        text = ios_code_generator.generators.generate('enum')
         print(text)
         strio = StringIO(u"-User:i\nvideo;list;table;text;picture")
         sys.stdin = strio
-        text = core.generate('enum')
+        text = ios_code_generator.generators.generate('enum')
         print(text)
 
     def test_enum_v2(self):
         strio = StringIO(u"-ExploreType:i\n curious:评测;news:菜谱;creator:维护;wiki:百科")
         sys.stdin = strio
-        text = core.generate('enum')
+        text = ios_code_generator.generators.generate('enum')
         print(text)
 
     def test_const(self):
         strio = StringIO(u"-User\nvideo;list;table;text;picture")
         sys.stdin = strio
-        text = core.generate('const')
+        text = ios_code_generator.generators.generate('const')
         print(text)
 
 
