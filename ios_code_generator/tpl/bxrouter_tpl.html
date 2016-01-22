@@ -1,7 +1,8 @@
 {% for comment in comments %}
 {{ comment }}
 {% endfor %}
-enum ApiRouter:URLRequestConvertible{
+{% if model %}
+enum {{model.name}}:URLRequestConvertible{
 {%  for router in routers %}
     {{ router.case_stmt }}
 {% endfor %}
@@ -58,3 +59,18 @@ enum ApiRouter:URLRequestConvertible{
         return URL.URLByAppendingPathComponent(path)
     }
 }
+{% else %}
+{# no model #}
+// Case list
+{%  for router in routers %}
+{{ router.case_stmt }}
+{% endfor %}
+// Path List
+{%  for router in routers %}
+{{ router.path_stmt }}
+{% endfor %}
+// Params List
+{%  for router in routers %}
+{{ router.params_stmt }}
+{% endfor %}
+{% endif %}

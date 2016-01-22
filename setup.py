@@ -7,6 +7,7 @@ setup(
     version='0.2.0',
     author='Haizhen Lee',
     author_email='banxi1988@gmail.com',
+    install_requires = ['jinja2','cached-property'],
     description='iOS Code Generator',
     packages=['ios_code_generator'],
     package_data={'ios_code_generator': ['tpl/*.html']},
