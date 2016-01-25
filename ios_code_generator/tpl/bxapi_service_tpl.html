@@ -1,0 +1,22 @@
+{% for group in groups %}
+struct {{group.service_name}}{
+ {% for router in group.routers %}
+    // {{router.comment.config_value}}
+    {% if router.has_param %}
+    {% if router.only_one_param %}
+    {% set pname = router.first_query_name %}
+    static func {{router.camel_name}}({{pname}}:String,responseHandler:ApiResponseHandler){
+        let router = {{model.class_name}}.{{router.name}}({{pname}}:{{pname}})
+    {% else %}
+    static func {{router.camel_name}}(params:Params,responseHandler:ApiResponseHandler){
+        let router = {{model.class_name}}.{{router.name}}(params:params)
+    {% endif %}
+    {% else %}
+    static func {{router.camel_name}}(responseHandler:ApiResponseHandler){
+        let router = {{model.class_name}}.{{router.name}}
+    {% endif %}
+        performRouter(router, responseHandler: responseHandler)
+    }
+ {% endfor %}
+}
+{% endfor %}

@@ -3,6 +3,7 @@ from __future__ import  unicode_literals
 __author__ = 'banxi'
 import sys
 import re
+import itertools
 import urlparse
 from cached_property import cached_property
 from . import utils
@@ -47,6 +48,13 @@ class Router(object):
         return self.attrs.get('c', '')
 
     @cached_property
+    def group_name(self):
+        if 'group' in self.attrs:
+            return self.attrs.get('group').config_value
+        return 'api'
+
+
+    @cached_property
     def path_comps(self):
         path_comps = self.raw_path_comps
         if len(path_comps) > 2:
@@ -74,6 +82,10 @@ class Router(object):
         if path_comps[0] == prefix:
             path_comps = path_comps[1:]
         return ''.join([utils.snakelize(comp) for comp in path_comps if comp])
+
+    @property
+    def camel_name(self):
+        return utils.camelize_word(self.name)
 
     @cached_property
     def dot_name(self):
@@ -128,6 +140,15 @@ class Router(object):
         else:
             return 'case .%s(let params): return params' % self.name
 
+class GroupRouters(object):
+    def __init__(self,name,routers):
+        self.name = name
+        self.routers = routers
+
+    @cached_property
+    def service_name(self):
+        return utils.snakelize(self.name+'Service')
+
 router_pattern = re.compile(r'(?P<req>[^,;\(\)]+)(?:\((?P<attrs>[\w=,-/\u4e00-\u9fcc]+)\))?')
 model_pattern = re.compile(r'(?P<name>\w+)(?:\((?P<attrs>[\w=,/\u4e00-\u9fcc]+)\))?')
 
@@ -156,14 +177,26 @@ def parse_source(lines):
     return model,routers
 
 
-def main(**options):
-    target = "router"
-    print("// Build for router ")
+def group_routers(routers):
+    gr_list = []
+    for k,g in itertools.groupby(routers,key=lambda x:x.group_name):
+        gr = GroupRouters(k,routers=list(g))
+        gr_list.append(gr)
+    return gr_list
+
+def main(target='router',**options):
+    print("// Build for %s" % target)
     lines = utils.readlines_from_stdin()
     model,router_list = parse_source(lines)
     comments = ["//"+line for line in lines]
     template = jinja2_env.get_template('bx%s_tpl.html' % target)
-    public_routers = [r for r in router_list if r.is_public]
-    post_routers = [r for r in router_list if r.is_post]
-    text = template.render(model=model,comments=comments, routers=router_list, public_routers=public_routers, post_routers=post_routers)
+    ctx = dict(model=model,comments=comments)
+    if target == 'router':
+        public_routers = [r for r in router_list if r.is_public]
+        post_routers = [r for r in router_list if r.is_post]
+        ctx.update(routers=router_list,public_routers=public_routers, post_routers=post_routers)
+    elif target == 'api_service':
+        groups = group_routers(router_list)
+        ctx['groups'] = groups
+    text = template.render(**ctx)
     print(text.encode('utf-8'))
