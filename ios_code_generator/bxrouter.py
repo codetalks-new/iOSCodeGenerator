@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import  unicode_literals
 __author__ = 'banxi'
 import sys
 import re
@@ -17,21 +18,33 @@ FIELD_DELIMETER = ';'
 
 
 class Router(object):
-    def __init__(self,model, req, is_public=False, is_post=False):
+    def __init__(self,model, req, method='get', attrs=None):
         super(Router, self).__init__()
         self.model = model
         self.req = req
-        self.is_public = is_public
-        self.is_post = is_post
+        self.method = method
+        self.attrs = attrs if attrs else {}
         parse_result = urlparse.urlparse(req)
         self.query_dict = urlparse.parse_qs(parse_result.query, keep_blank_values=True)
         self.raw_path_comps = [p for p in parse_result.path.split('/') if p]
+
+    @cached_property
+    def is_public(self):
+        return 'p' in self.attrs
+
+    @cached_property
+    def is_post(self):
+        return self.method in ['p','post']
 
     def treat_last_id_path_as_query(self):
         if self.model:
             return self.model.has_attr('idpath',True)
         else:
             return True
+
+    @property
+    def comment(self):
+        return self.attrs.get('c', '')
 
     @cached_property
     def path_comps(self):
@@ -71,10 +84,18 @@ class Router(object):
 
     @cached_property
     def has_param(self):
+        if self.has_params:
+            return True
         return bool(self.query_dict)
 
     @cached_property
+    def has_params(self):
+        return 'params' in self.attrs
+
+    @cached_property
     def only_one_param(self):
+        if self.has_params:
+            return False
         return len(self.query_dict) == 1
 
     @cached_property
@@ -107,19 +128,20 @@ class Router(object):
         else:
             return 'case .%s(let params): return params' % self.name
 
-router_pattern = re.compile(r'(?P<req>[^,;\(\)]+)(?:\((?P<attrs>[\w=,]+)\))?')
-model_pattern = re.compile(r'(?P<name>\w+)(?:\((?P<attrs>[\w=,]+)\))?')
+router_pattern = re.compile(r'(?P<req>[^,;\(\)]+)(?:\((?P<attrs>[\w=,-/\u4e00-\u9fcc]+)\))?')
+model_pattern = re.compile(r'(?P<name>\w+)(?:\((?P<attrs>[\w=,/\u4e00-\u9fcc]+)\))?')
 
 def parse_route(info, model=None):
     parts = re.split(':', info.strip())
     req_info = parts[0]
-    is_post = 'p' in parts[1] if len(parts) > 1 else False
+    method = parts[1] if len(parts) > 1 else 'get'
     matcher = router_pattern.match(req_info)
     groupdict = matcher.groupdict()
     req = groupdict.get('req')
-    attrs = groupdict.get('attrs')
-    is_public = 'p' in attrs if attrs else False
-    return Router(model,req, is_public=is_public, is_post=is_post)
+    attrs_str = groupdict.get('attrs')
+    attr_list = parser.parse_field_config(attrs_str)
+    attrs = dict( [(item.ctype,item) for item in attr_list] )
+    return Router(model,req,method,attrs)
 
 
 def parse_source(lines):
