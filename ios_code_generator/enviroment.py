@@ -57,7 +57,10 @@ class Environment(object):
         for ctype, constraint in constraints.iteritems():
             stmt = self.generate_constraint_stmt(field,constraint)
             if stmt:
-                c_stmts.append(stmt+".install()")
+                if 'pac_' in stmt:
+                    c_stmts.append(stmt)
+                else:
+                    c_stmts.append(stmt+".install()")
         if c_stmts:
             text = '\n'.join(c_stmts)
             text += '\n'

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
+from __future__ import  unicode_literals
+from cached_property import  cached_property
 from ios_code_generator.maps import ui_field_type_map, ui_image_field_types, ui_button_field_types, \
     ui_type_value_field_map, ui_type_value_type_map, ui_view_designed_init_map, ui_model_type_map, ui_field_attr_map, \
     enum_raw_type_map, settings_raw_type_map
-
-__author__ = 'banxi'
-
 from . import utils
 
+__author__ = 'banxi'
 
 ### UIModel specifie
 
@@ -36,46 +36,168 @@ class ModelDecl(object):
         return self.model_config.get('m', 'T')
 
     @property
+    def is_button_group(self):
+        return self.mtype == 'button_group'
+
+
+    @cached_property
+    def ui_model_name(self):
+        return self.model_config.get('m','T')
+
+    @cached_property
+    def ui_camel_mname(self):
+        return utils.camelize_word(self.ui_model_name)
+
+    @cached_property
+    def ui_cell_name(self):
+        if 'cell' in self.model_config:
+            return self.model_config.get('cell')
+        else:
+            return self.ui_model_name+'Cell'
+
+    @cached_property
+    def ui_service_name(self):
+        if 'service' in self.model_config:
+            return self.ui_model_name+'Service'
+        return ''
+
+    @cached_property
+    def ui_delegate_name(self):
+        return utils.snakelize(self.name)+'Delegate'
+
+    @property
+    def camel_name(self):
+        return utils.camelize(self.name)
+
+    #####
+    ### Main Feature Support (refesh,loadmore,page,detail)
+    #######
+    @cached_property
+    def ui_has_detail(self):
+        return 'detail' in self.model_config
+
+    @cached_property
+    def ui_has_refresh(self):
+        return 'refresh' in self.model_config
+
+    @cached_property
+    def ui_has_loadmore(self):
+        return 'loadmore' in self.model_config
+
+    @cached_property
+    def ui_has_page(self):
+        if  'page' in self.model_config:
+            return True
+        return self.ui_has_loadmore
+
+    @cached_property
+    def ui_has_tab(self):
+        return 'tab' in self.model_config
+
+    @cached_property
+    def ui_has_search(self):
+        return 'search' in self.model_config
+
+    @cached_property
+    def ui_is_inline_search(self):
+        return self.model_config.get('search','inline')
+
+    @cached_property
+    def has_req(self):
+        if 'req' in self.model_config:
+            return True
+        return self.ui_has_loadmore or self.ui_has_page or self.ui_has_search or self.ui_has_refresh
+
+    @cached_property
+    def adapter_type(self):
+        return self.model_config.get('adapter')
+
+    @cached_property
     def has_adapter(self):
         return 'adapter' in self.model_config
 
+    @cached_property
+    def has_static_adapter(self):
+        return 'sadapter' in self.model_config
+
     @property
     def adapter_decl(self):
-        base = self.model_config.get('adapter')
+        base = self.adapter_type
         if not base:
             return ''
         ctx = {
-            'mname': self.vc_mname,
-            'vname': self.vc_mname + "Cell"
+            'mname': self.ui_model_name,
+            'vname': self.ui_cell_name
         }
         if base == 'c':
-            return 'var adapter:SimpleGenericCollectionViewAdapter<{mname},{vname}>!'.format(**ctx)
+            return 'let adapter = SimpleGenericCollectionViewAdapter<{mname},{vname}>()'.format(**ctx)
         else:
-            return 'var adapter:SimpleGenericTableViewAdapter<{mname},{vname}>!'.format(**ctx)
+            return 'let adapter = SimpleGenericTableViewAdapter<{mname},{vname}>()'.format(**ctx)
 
     @property
     def adapter_init(self):
-        base = self.model_config.get('adapter')
+        base = self.adapter_type
         if not base:
             return ''
         if base == 'c':
-            return ' adapter = SimpleGenericCollectionViewAdapter(collectionView:collectionView)'
+            return ' adapter.bindTo(collectionView)'
         else:
-            return 'adapter = SimpleGenericTableViewAdapter(tableView:tableView)'
+            return 'adapter.bindTo(tableView)'
 
-    @property
+    @cached_property
     def is_vc(self):
         return 'vc' in self.mtype
 
-    @property
+    @cached_property
     def is_tvc(self):
         return 'tvc' == self.mtype
 
+    @cached_property
+    def ui_is_lib(self):
+        return 'lib' in self.model_config
+
+    @cached_property
+    def ui_no_bind(self):
+        return 'nobind' in self.model_config
+
+    @cached_property
+    def ui_has_bind(self):
+        return not self.ui_no_bind
+
     @property
     def class_name(self):
-        if 'vc' in self.mtype and 'ViewController' not in self.name:
+        if self.is_vc and 'Controller' not in self.name:
             return self.name + 'ViewController'
         return self.name
+
+    def ui_vc_name_with(self,infix):
+        suffix = infix + 'ViewController'
+        if 'Controller' not in self.name:
+            return self.name + infix
+        if 'ViewController' in self.name:
+            return self.name.replace('ViewController',suffix)
+        return self.name.replace('Controller',suffix)
+
+    #####
+    ### Tab Feature
+    ###
+    @cached_property
+    def ui_tab_vc_name(self):
+        return self.ui_vc_name_with('Tab')
+
+    @cached_property
+    def ui_tab_type_name(self):
+        if 'tab_type' in self.model_config:
+            return self.model_config['tab_type']
+        return self.ui_model_name+'Type'
+
+    ######
+    ### Detail Feature
+    #####
+    @cached_property
+    def ui_detail_vc_name(self):
+        return self.ui_vc_name_with('Detail')
+
 
     @property
     def prefix(self):
@@ -132,6 +254,8 @@ class UIField(object):
 
     @property
     def ui_field_name(self):
+        if self.model and self.model.is_button_group:
+            return 'button'
         pure_type_name = self.type_class.replace('UI', '')
         if self.ftype == 'tc':
             pure_type_name = 'Cell'

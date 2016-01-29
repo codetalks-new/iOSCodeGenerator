@@ -1,18 +1,20 @@
 import UIKit
-import SwiftyJSON
+import BXModel
+{% if not model.ui_is_lib %}
 import Bond
 import CocoaLumberjack
-import BXModel
+import SwiftyJSON
 import PromiseKit
 import BXiOSUtils
 import Kingfisher
 import BXForm
+{% endif %}
 
 {% for comment in comments %}
 {{ comment }}
 {% endfor %}
 
-class {{ model.class_name }} : {{model.superclass}},BXBindable {
+class {{ model.class_name }} : {{model.superclass}} {{  '' if model.ui_no_bind else ' ,BXBindable' }} {
     {% for field in uifields %}
     {{ field.declare_stmt }}
     {% endfor %}
@@ -33,6 +35,7 @@ class {{ model.class_name }} : {{model.superclass}},BXBindable {
     }
     {% endif %}
 
+    {% if model.ui_has_bind %}
     func bind(item:{{model.vc_mname}}){
     {% for field in uifields %}
         {% if field.can_bind_value %}
@@ -40,6 +43,7 @@ class {{ model.class_name }} : {{model.superclass}},BXBindable {
         {% endif %}
     {% endfor %}
     }
+    {% endif %}
 
     override func awakeFromNib() {
         super.awakeFromNib()

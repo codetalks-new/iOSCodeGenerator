@@ -7,6 +7,10 @@ import BXModel
 import BXiOSUtils
 import Kingfisher
 import BXForm
+{% set m = model %}
+{% if m.ui_has_page %}
+import BXLoadMoreControl
+{% endif %}
 
 {% for comment in comments %}
 {{ comment }}
@@ -18,13 +22,13 @@ class {{ model.class_name }} : {{model.superclass}} {
     {{ field.declare_stmt }}
     {% endfor %}
     {% if model.is_tvc %}
-        init(){
-        super.init(style:.Grouped)
-        }
+    init(){
+    super.init(style:.Grouped)
+    }
 
-        override init(style: UITableViewStyle){
-        super.init(style:style)
-        }
+    override init(style: UITableViewStyle){
+    super.init(style:style)
+    }
     {% else %}
     convenience init(){
         self.init(nibName: nil, bundle: nil)
@@ -50,7 +54,8 @@ class {{ model.class_name }} : {{model.superclass}} {
 
     override func viewDidLoad() {
     super.viewDidLoad()
-    navigationItem.title = ""
+    title = ""
+    navigationItem.title = title
     {{ model.adapter_init }}
 
     {% if model.is_tvc %}
@@ -61,33 +66,155 @@ class {{ model.class_name }} : {{model.superclass}} {
         tableView.estimatedRowHeight = 120
         tableView.separatorStyle = .None
     {% endif %}
-    {% if model.has_attr('req') %}  loadData() {% endif %}
+    {% if model.ui_has_detail %}
+         adapter.didSelectedItem = {
+          item,index in
+          self.show{{model.ui_model_name}}Detail(item)
+        }
+    {% endif %}
+    {% if model.has_req %}
+    loadData()
+    {% endif %}
+    {% if model.ui_has_refresh %}
+        refreshControl = UIRefreshControl(frame: CGRectZero)
+        refreshControl?.addTarget(self, action: "refresh", forControlEvents: .ValueChanged)
+    {% endif %}
+    {% if model.ui_has_page %}
+        bx_loadMoreControl = loadMoreControl
+        loadMoreControl.onLoadingHandler = {
+          self.loadMore()
+        }
+    {% endif %}
+
     }
 
-    {% if model.has_attr('req') %}
-        {% if model.has_attr('page') %}
-        let pageSize = 20
-        var page = 1
-        var hasMore = true
-        var offset = 0
-        {% endif %}
-        func loadData(){
-            let params:Params = [
-                "page":page,
-                "offset":offset
-            ]
-            request(ApiRouter.).responseApiResponse{ (resp:ApiResponse) in
-                if resp.ok{
-                self.handleResponse(resp)
-                }
-            }
+    {% if model.ui_has_tab %}
+    var tabType:{{model.ui_tab_type_name}}!
+    {% endif %}
+
+    {% if model.ui_has_detail %}
+    func show{{model.ui_model_name}}Detail(item:{{model.ui_model_name}}){
+      let vc = {{model.ui_detail_vc_name}}()
+      vc.{{model.ui_camel_mname}} = item
+      showViewController(vc,sender:self)
+    }
+    {% endif %}
+
+    {% if model.ui_has_page %}
+    var page = 1
+    var hasMore = true
+    var isLoadingMore = false
+
+    lazy var loadMoreControl = BXLoadMoreControl()
+    func loadMore(){
+        if !hasMore{
+          loadMoreControl.endLoading()
+          loadMoreControl.nomore()
         }
+        {% if model.ui_has_search %} search = ""  {%endif %}
+        page = page + 1
+        isLoadingMore = true
+        loadData()
+    }
+
+    {% endif %}
+
+    {% if model.ui_has_search %}
+      private var search:String = ""
+      func searchByText(text:String){
+        search = text.trimmed()
+        if search.isEmpty{
+          HUD.showErrorTip("搜索词不能为空")
+          return
+      }
+        adapter.updateItems([])
+        page = 1
+        loadData()
+    }
+    {% endif %}
+    {% if model.ui_has_refresh %}
+    var refreshing = false
+    func refresh(){
+        refreshing = true
+        refreshControl?.beginRefreshing()
+        reloadData()
+    }
+
+    func reloadData(){
+        {% if m.ui_has_search %} search = "" {% endif %}
+        page = 1
+        adapter.updateItems([])
+        loadData()
+      }
+    {% endif %}
+    {% if model.has_req %}
+    // MARK: Load Data
+        func loadData(){
+        {% if model.has_attr('service') %}
+        let params:Params = [:]
+        {{model.ui_service_name}}.listBy(params){ resp in
+          self.handleResponse(resp)
+        }
+        {% else %}
+            let params:Params = [:]
+            request(ApiRouter.).responseApiResponse{ (resp:ApiResponse) in
+               self.handleResponse(resp)
+            }
+        {% endif %}
+        }
+    // MARK: Handle Response
         func handleResponse(resp:ApiResponse){
-            {% if model.has_attr('adapter') %}
+        {% if model.ui_has_refresh %}
+         if refreshing{
+            refreshing = false
+            refreshControl?.endRefreshing()
+          }
+        {% endif %}
+            if resp.ok{
+             self.handleLoadedData(resp)
+            }else{
+             {% if model.ui_has_page %}
+              if isLoadingMore{
+               page = page - 1 // rollback
+              }
+             {% endif %}
+            }
+        {% if model.ui_has_page %}
+          if isLoadingMore{
+            loadMoreControl.endLoading()
+          }
+          if hasMore{
+            loadMoreControl.reset()
+          }else{
+           loadMoreControl.nomore()
+          }
+          isLoadingMore = false
+        {% endif %}
+        }
+    // MARK: Handle Loaded Data
+        func handleLoadedData(resp:ApiResponse){
+        {% if model.has_attr('adapter') %}
             let data = resp.data
             let items = {{model.vc_mname}}.arrayFrom(data)
-            adapter.updateItems(items)
+            {% if model.ui_has_page %}
+                if isLoadingMore{
+                     adapter.appendItems(items)
+                }else{
+                    adapter.updateItems(items)
+                }
+                hasMore = items.count >= pageSize
+            {% else %}
+                adapter.updateItems(items)
             {% endif %}
+
+            {% if model.ui_has_search %}
+            if search.isNotEmpty{
+             if items.isEmpty{
+               HUD.showErrorTip(" 搜索结果为空")
+             }
+            }
+            {% endif %}
+        {% endif %}
         }
     {%  endif %}
 
@@ -96,3 +223,40 @@ class {{ model.class_name }} : {{model.superclass}} {
 
 
 }
+
+{% if model.ui_has_tab %}
+import UIKit
+import BXViewPager
+
+class {{model.ui_tab_vc_name}}:BXViewPagerViewController{
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    showIndicator = true
+    
+    var vcs:[UIViewController] = []
+    for type in {{model.ui_tab_type_name}}.allCases{
+      let vc = {{model.class_name}}()
+      vc.tabType = type
+      vc.title = type.title
+      vcs.append(vc)
+    }
+    
+    setViewControllers(vcs, animated: true)
+
+    }
+    {% if model.ui_has_search %}
+      func searchByText(text:String){
+      if let vc = currentPageViewController as? {{model.class_name}}{
+          vc.searchByText(text)
+        }
+      }
+    {% endif %}
+}
+{% endif %}
+
+{% if model.has_detail %}
+// Stub for detail
+// {{model.ui_detail_vc_name}}
+// var {{model.ui_camel_mname}}:{{model.ui_model_name}}!
+{% endif %}

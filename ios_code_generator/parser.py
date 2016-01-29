@@ -32,7 +32,7 @@ def parse_constraint_config_item(config):
 
 def parse_constraint_config(config):
     pairs = config.split(',') if config else []
-    return [parse_constraint_config_item(pair) for pair in pairs]
+    return [parse_constraint_config_item(pair) for pair in pairs if pair]
 
 
 def parse_field_config_item(config):
@@ -50,7 +50,7 @@ def parse_field_config_item(config):
 
 def parse_field_config(config):
     pairs = config.split(',') if config else []
-    return [parse_field_config_item(pair) for pair in pairs]
+    return [parse_field_config_item(pair) for pair in pairs if pair]
 
 
 

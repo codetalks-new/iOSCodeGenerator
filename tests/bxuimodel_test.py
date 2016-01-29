@@ -1,4 +1,5 @@
 #-*- coding:utf-8 -*-
+from __future__ import  unicode_literals
 import unittest
 
 import os
@@ -50,6 +51,17 @@ class MyTestCase(unittest.TestCase):
         sys.stdin = strio
         text = ios_code_generator.generators.generate('const')
         print(text)
+
+    def test_button_group(self):
+        strio = StringIO("""
+        -JobCell(m=Job):button_group
+        edit(f15,cst):b
+        refresh(f15,cst):b
+        """)
+        sys.stdin = strio
+        text = ios_code_generator.generators.generate('button_group')
+        print(text)
+
 
 
 if __name__ == '__main__':

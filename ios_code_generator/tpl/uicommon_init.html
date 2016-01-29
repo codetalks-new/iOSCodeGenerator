@@ -1,7 +1,8 @@
-{% include 'outlets_group.html' %}
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
+
+{% include 'outlets_group.html' %}
 
     func commonInit(){
         for childView in allOutlets{

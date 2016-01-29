@@ -17,6 +17,7 @@ char_type_map = {
     'di': 'NSDate',
     'ds': 'NSDate',
     '[s': 'Array',
+    '[u': 'Array',
     '[i': 'Array',
     '[f': 'Array',
     '[d': 'Array',

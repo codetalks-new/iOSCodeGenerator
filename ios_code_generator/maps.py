@@ -15,6 +15,7 @@ ui_field_type_map = {
     'p': 'UIPickerView',
     'cb': 'CheckboxButton',
     'ib': 'IconButton',
+    'ob': 'OutlineButton',
     'sb': 'UISearchBar',
     'pc': 'UIPageControl',
     'dp': 'UIDatePicker',
@@ -29,6 +30,7 @@ ui_field_type_map = {
     'ctb': 'ConfirmTitleBar',
     'tv': 'UITextView',
     'il': 'IconLabel',
+    'ol': 'OvalLabel',
     'ci': 'OvalImageView',
     'wv': 'WKWebView',
     'gbb': 'GroupButtonBar',
@@ -40,11 +42,11 @@ ui_image_field_types = [
     'i','oi','ci'
 ]
 ui_button_field_types = [
-    'b','cb','ib'
+    'b','cb','ib','ob'
 ]
 
 ui_has_textColor_prop_field_types = [
-    'l','il','f',
+    'l','il','ol','f','tv',
 ]
 ui_has_textColor_prop_field_types += ui_button_field_types
 
@@ -57,11 +59,17 @@ ui_prefer_tintColor_prop_field_types += ui_button_field_types
 ui_type_value_field_map = {
     'l': 'text',
     'f': 'text',
+    'il': 'text',
+    'ol': 'text',
     'sw': 'on',
+    'tv':'text',
 }
 ui_type_value_type_map = {
     'l': 'String',
+    'il':'String',
+    'ol':'String',
     'f': 'String',
+    'tv':'String',
     'sw': 'Bool'
 }
 ui_view_designed_init_map = {

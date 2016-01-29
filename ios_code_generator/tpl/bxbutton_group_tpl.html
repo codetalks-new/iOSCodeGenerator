@@ -1,0 +1,39 @@
+{% set m = model %}
+
+// {{m.name}}Delegate
+protocol {{m.name}}Delegate:class{
+    {% for button in uifields %}
+        func {{m.camel_name}}(cell:{{m.name}},{{button.name}}{{m.ui_model_name}} {{m.ui_camel_mname}}:{{m.ui_model_name}})
+    {% endfor %}
+}
+
+// MARK: Button Groups
+{% for button in uifields %}
+    lazy var {{button.name}}Button : OutlineButton = { [unowned self] in
+    let button = OutlineButton()
+    button.addTarget(self, action: "on{{button.snake_name}}ButtonPressed:", forControlEvents: .TouchUpInside)
+    {{ button.attrs_stmt }}
+    return button
+    }()
+{% endfor %}
+
+// MARK: Button Group Actions
+{% for button in uifields %}
+func on{{button.snake_name}}ButtonPressed(sender:UIButton){
+    guard let item = self.item else {
+        return
+    }
+    self.delegate?.{{m.camel_name}}(self,{{button.name}}{{m.ui_model_name}}:item)
+}
+{% endfor %}
+
+// MARK: Confirm {{m.name}}Delegate
+extension UIViewController: {{m.name}}Delegate{
+{% for button in uifields %}
+    func {{m.camel_name}}(cell:{{m.name}},{{button.name}}{{m.ui_model_name}} {{m.ui_camel_mname}}:{{m.ui_model_name}}){
+
+    }
+
+{% endfor %}
+}
+
