@@ -17,6 +17,14 @@ protocol {{m.name}}Delegate:class{
     }()
 {% endfor %}
 
+{% for grouper,fields in uifields|groupby('type_class') %}
+var all{{grouper}}Outlets :[{{grouper}}]{
+return [{{ fields|map(attribute='ui_button_name')|join(',') }}]
+}
+{% endfor %}
+
+var delegate:{{m.name}}Delegate?
+
 // MARK: Button Group Actions
 {% for button in uifields %}
 func on{{button.snake_name}}ButtonPressed(sender:UIButton){

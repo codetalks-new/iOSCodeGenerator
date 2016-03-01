@@ -31,3 +31,15 @@ enum {{ model.class_name }} {% if model.raw_type %}:{{ model.raw_type }}{% endif
 
     static let allCases:[{{ model.class_name }}] = [{{  uifields|map(attribute='cap_name')|join(',') }}]
 }
+
+{% if model.enum_has_icon %}
+extension  {{model.class_name}} {
+    var icon:UIImage{
+        switch self{
+        {% for uifield in uifields %}
+            case {{uifield.cap_name}}:return Images..image
+        {% endfor %}
+        }
+    }
+}
+{% endif %}

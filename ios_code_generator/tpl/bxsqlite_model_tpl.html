@@ -1,0 +1,116 @@
+{% for comment in comments %}
+{{ comment }}
+{% endfor %}
+import SQLite
+
+{% set m= model %}
+{% set mname = model.class_name %}
+{% set t_var = "t_"+m.class_name %}
+{% set sname = model.class_name+"Service" %}
+{% set s_var = model.camel_name+"Service" %}
+
+extension {{model.class_name}}{
+    typelias Columns = {{model.class_name}}Service.Columns
+    init(row:Row){
+    {%  for uifield in uifields %}
+        self.{{uifield.name}} = row[Columns.{{uifield.name}}]
+    {% endfor %}
+    }
+}
+
+private let {{s_var}} = {{sname}}()
+
+class {{sname}}{
+    struct Columns  {
+    {%  for uifield in uifields %}
+        static let {{ uifield.name }} = Expression<{{uifield.db_column_name}}>("{{uifield.name}}")
+    {% endfor %}
+    }
+
+    let {{t_var}} = Table("{{m.db_table_name}}")
+    static var sharedService:{{sname}}{ return {{s_var}} }
+    private init(){
+        let stmt =  {{t_var}}.create(ifNotExists:true){ t in
+                t.column(Columns.id, primaryKey:.Autoincrement)
+                {%  for uifield in uifields %}
+                {% if uifield.name != 'id' %}
+                t.column(Columns.{{uifield.name}})
+                {% endif %}
+                {% endfor %}
+            }
+        try! db.run(stmt)
+    }
+
+    func query(queryType:QueryType) -> [{{m.class_name}}]{
+        var list = [{{m.class_name}}]()
+        for row in try! db.prepare(queryType.order(Columns.id.desc)) {
+            let obj = {{m.class_name}}(row:row)
+            list.append(obj)
+        }
+        return list
+    }
+
+    func all() -> [{{mname}}]{
+        return query({{t_var}})
+    }
+
+    func add(obj:{{m.class_name}}){
+        do{
+            let stmt = {{t_var}}.insert(or: .Replace,
+            {% for field in uifields %}
+            {% if field.name != 'id' %}
+            Columns.{{field.name}} <- m.{{field.name}},
+            {%  endif %}
+            {% endfor %}
+            )
+            let rowId = try db.run(stmt)
+            obj.id = Int(rowId)
+            DDLogDebug("Insert success:\(rowId)")
+        }catch {
+            DDLogError("Insert failed:\(obj))")
+        }
+    }
+
+    func add(obj:{{m.class_name}}){
+        do{
+            let stmt = {{t_var}}.update(
+            {% for field in uifields %}
+            {% if field.name != 'id' %}
+            Columns.{{field.name}} <- m.{{field.name}},
+            {%  endif %}
+            {% endfor %}
+            )
+            let rowId = try db.run(stmt)
+            obj.id = Int(rowId)
+            DDLogDebug("Insert success:\(rowId)")
+        }catch {
+            DDLogError("Update failed:\(obj))")
+        }
+    }
+
+
+    func delete(obj:{{mname}}) -> Bool{
+        do{
+            let stmt = {{t_var}}.filter(Columns.id == obj.id).delete()
+            if try db.run(stmt) > 0 {
+                return true
+            }
+        }catch{
+            DDLogError("Delete failed \(obj) error:\(error))")
+        }
+        return false
+    }
+
+    func deleteAll() -> Bool{
+        do{
+            let stmt = {{t_var}}.delete()
+            if try db.run(stmt) > 0 {
+                return true
+            }
+        }catch{
+            DDLogError("Delete All Failed:\(error))")
+        }
+        return false
+    }
+
+}

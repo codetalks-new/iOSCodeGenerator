@@ -49,8 +49,7 @@ enum {{model.name}}:URLRequestConvertible{
     }
 
     var URLRequest: NSMutableURLRequest {
-        let mutableURLRequest = NSMutableURLRequest(URL:fullURL)
-        mutableURLRequest.HTTPMethod = method.rawValue
+        let  mutableURLRequest =  createURLRequest(method, fullURL, headers: ["User-Agent":userAgent])
         return Alamofire.ParameterEncoding.URL.encode(mutableURLRequest, parameters: params).0
     }
 

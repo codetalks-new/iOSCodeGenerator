@@ -3,7 +3,7 @@ from __future__ import  unicode_literals
 from cached_property import  cached_property
 from ios_code_generator.maps import ui_field_type_map, ui_image_field_types, ui_button_field_types, \
     ui_type_value_field_map, ui_type_value_type_map, ui_view_designed_init_map, ui_model_type_map, ui_field_attr_map, \
-    enum_raw_type_map, settings_raw_type_map
+    enum_raw_type_map, settings_raw_type_map,db_type_map
 from . import utils
 
 __author__ = 'banxi'
@@ -79,6 +79,10 @@ class ModelDecl(object):
     @cached_property
     def ui_has_refresh(self):
         return 'refresh' in self.model_config
+
+    @cached_property
+    def ui_has_remove(self):
+        return 'remove' in self.model_config
 
     @cached_property
     def ui_has_loadmore(self):
@@ -213,6 +217,9 @@ class ModelDecl(object):
     def raw_type(self):
         return enum_raw_type_map.get(self.mtype)
 
+    @property
+    def enum_has_icon(self):
+        return 'icon' in self.model_config
     ##### Defaults Support
     @property
     def settings_prefix(self):
@@ -224,6 +231,20 @@ class ModelDecl(object):
         if value in ['1','t','true','on']:
             return True
         return False
+
+    ######
+    ### SQLite Ddatabase Model Support
+    ###
+    @cached_property
+    def db_table_name(self):
+        prefix = self.model_config.get('prefix','')
+        if prefix:
+            return "%s_%s" % (prefix,self.camel_name)
+        else:
+            return self.camel_name
+
+
+
 
     def create_env(self):
         from .enviroment import  Environment
@@ -267,6 +288,10 @@ class UIField(object):
                 return self.name[:-1]
             else:
                 return  "{name}{type_name}".format(name=self.name, type_name=pure_type_name)
+
+    @property
+    def ui_button_name(self):
+        return self.name+'Button'
 
     @property
     def snake_name(self):
@@ -490,4 +515,11 @@ class UIField(object):
             return text
         else:
             return ''
+
+    #####
+    ## Database Model Support
+    ####
+    @property
+    def db_column_name(self):
+        return db_type_map.get(self.ftype,'String')
 

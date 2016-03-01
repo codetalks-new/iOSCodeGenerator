@@ -54,14 +54,21 @@ class MyTestCase(unittest.TestCase):
 
     def test_button_group(self):
         strio = StringIO("""
-        -JobCell(m=Job):button_group
-        edit(f15,cst):b
-        refresh(f15,cst):b
+        -JobUserCell(m=JobUser):button_group
+        view(f15,cst,text=录用):b
         """)
         sys.stdin = strio
         text = ios_code_generator.generators.generate('button_group')
         print(text)
 
+    def test_sqlite_model(self):
+        strio = StringIO("""
+        -JobUser
+        id;type;props:j;isRead:b,created:d
+        """)
+        sys.stdin = strio
+        text = ios_code_generator.generators.generate('sqlite_model')
+        print(text)
 
 
 if __name__ == '__main__':

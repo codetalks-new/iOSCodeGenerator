@@ -65,6 +65,7 @@ class {{ model.class_name }} : {{model.superclass}} {
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 120
         tableView.separatorStyle = .None
+        tableView.separatorColor = AppColors.seperatorLineColor
     {% endif %}
     {% if model.ui_has_detail %}
          adapter.didSelectedItem = {
@@ -224,6 +225,24 @@ class {{ model.class_name }} : {{model.superclass}} {
 
 }
 
+{% if m.ui_has_remove %}
+
+extension {{m.class_name}} {
+    // MARK: Actions
+    func remove{{m.ui_model_name}}(item:{{m.ui_model_name}}){
+        guard let index = adapter.indexOfItem(item) else{
+            return
+        }
+        adapter.removeAtIndex(index)
+        let indexPath = NSIndexPath(forRow: index, inSection: 0)
+        tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+
+        // var eventName:String?
+        //    NSNotificationCenter.defaultCenter().postNotificationName(dataSetChangedEvent, object: nil)
+    }
+}
+{% endif %}
+
 {% if model.ui_has_tab %}
 import UIKit
 import BXViewPager
@@ -232,6 +251,8 @@ class {{model.ui_tab_vc_name}}:BXViewPagerViewController{
   
   override func viewDidLoad() {
     super.viewDidLoad()
+    title = ""
+    navigationItem.title = title
     showIndicator = true
     
     var vcs:[UIViewController] = []

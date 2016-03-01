@@ -107,6 +107,7 @@ ui_field_attr_map = {
     'cwa': '+UIColor(white: 1.0, alpha: 1.0)',
     'ch': '+UIColor(hex:0xabc)',
     'ca': '+AppColors.accentColor',
+    'cr': '+AppColors.redColor',
     'bp': '+setBackgroundImage(UIImage.Asset.ButtonPrimary.image,forState:.Normal)'
 }
 ui_field_attr_sketch_map = {
@@ -174,4 +175,13 @@ ui_field_pa_relation_map = {
 ui_vc_pa_func_map = {
     't': 'pa_below(self.topLayoutGuide)',
     'b': 'pa_above(self.bottomLayoutGuide)'
+}
+
+db_type_map = {
+    's': 'String',
+    'i': 'Int',
+    'b': 'Bool',
+    'f': 'Double',
+    'j': 'JSON',
+    'd': 'NSDate'
 }
