@@ -88,6 +88,7 @@ ui_model_type_map = {
     'cc': 'UICollectionViewCell',
     'vc': 'BaseUIViewController',
     'tvc': 'BaseUITableViewController',
+    'cvc': 'BaseUICollectionViewController',
     'tabvc': 'BaseUITabBarController',
 }
 ui_field_attr_map = {

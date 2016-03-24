@@ -59,7 +59,7 @@ class {{sname}}{
             let stmt = {{t_var}}.insert(or: .Replace,
             {% for field in uifields %}
             {% if field.name != 'id' %}
-            Columns.{{field.name}} <- m.{{field.name}},
+            Columns.{{field.name}} <- obj.{{field.name}},
             {%  endif %}
             {% endfor %}
             )
@@ -71,20 +71,21 @@ class {{sname}}{
         }
     }
 
-    func add(obj:{{m.class_name}}){
+    func update(obj:{{m.class_name}}) -> Bool {
         do{
             let stmt = {{t_var}}.update(
             {% for field in uifields %}
             {% if field.name != 'id' %}
-            Columns.{{field.name}} <- m.{{field.name}},
+            Columns.{{field.name}} <- obj.{{field.name}},
             {%  endif %}
             {% endfor %}
             )
-            let rowId = try db.run(stmt)
-            obj.id = Int(rowId)
+            let count = try db.run(stmt)
             DDLogDebug("Insert success:\(rowId)")
+            return count > 0
         }catch {
             DDLogError("Update failed:\(obj))")
+            return false
         }
     }
 

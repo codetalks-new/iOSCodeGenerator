@@ -63,8 +63,8 @@ class MyTestCase(unittest.TestCase):
 
     def test_sqlite_model(self):
         strio = StringIO("""
-        -JobUser
-        id;type;props:j;isRead:b,created:d
+         -ClockRecord
+        id:i;created:d;last_modified:d;clock_time:d;type:i;memo;props:j
         """)
         sys.stdin = strio
         text = ios_code_generator.generators.generate('sqlite_model')
