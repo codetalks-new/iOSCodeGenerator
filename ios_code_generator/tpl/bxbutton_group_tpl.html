@@ -11,7 +11,7 @@ protocol {{m.name}}Delegate:class{
 {% for button in uifields %}
     lazy var {{button.name}}Button : OutlineButton = { [unowned self] in
     let button = OutlineButton()
-    button.addTarget(self, action: "on{{button.snake_name}}ButtonPressed:", forControlEvents: .TouchUpInside)
+    button.addTarget(self, action: #selector(on{{button.snake_name}}ButtonPressed(_:)), forControlEvents: .TouchUpInside)
     {{ button.attrs_stmt }}
     return button
     }()
