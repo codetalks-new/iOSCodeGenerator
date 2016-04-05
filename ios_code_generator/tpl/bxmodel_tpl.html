@@ -1,0 +1,58 @@
+import SwiftyJSON
+import BXModel
+{% for comment in comments %}
+{{ comment }}
+{% endfor %}
+{% set m = model %}
+{% set fields = uifields %}
+struct {{ m.class_name }} :BXModel{
+    {%  for field in fields %}
+       {{field.m_declare_stmt}}
+    {% endfor %}
+
+    init(json:JSON){
+        {%  for field in fields %}
+        {{field.m_init_stmt}}
+        {% endfor %}
+    }
+
+    func toDict() -> [String:AnyObject]{
+        var dict : [String:AnyObject] = [ : ]
+        {%  for field in fields %}
+        {{field.m_to_dict_stmt}}
+        {% endfor %}
+        return dict
+    }
+}
+
+{% if m.m_impl_eq %}
+
+extension {{m.class_name}}: Equatable{
+
+}
+
+func ==(lhs:{{m.class_name}},rhs:{{m.class_name}}) -> Bool{
+{% if m.m_has_id %}
+    return lhs.id == rhs.id
+{% else %}
+    return lhs. == rhs.
+{% endif %}
+}
+
+{% endif %}
+
+{% if m.m_impl_hash %}
+extension  {{m.class_name}} : Hashable{
+{% if m.m_has_id %}
+var hashValue:Int{ return id.hashValue   }
+{% else %}
+var hashValue:Int{ return   }
+{% endif %}
+}
+{% endif %}
+
+{% if m.m_impl_tos %}
+extension {{m.class_name}} : CustomStringConvertible{
+ var description:String {  return }
+}
+{% endif %}

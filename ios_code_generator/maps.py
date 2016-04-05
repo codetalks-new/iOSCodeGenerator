@@ -186,3 +186,23 @@ db_type_map = {
     'j': 'JSON',
     'd': 'NSDate'
 }
+
+m_char_type_map = {
+    's': 'String',
+    'i': 'Int',
+    'f': 'Double',
+    'd': 'Double',
+    'b': 'Bool',
+    'u': 'NSURL',
+    'r': 'Ref',
+    'j': 'JSON',
+    'di': 'NSDate',
+    'ds': 'NSDate',
+    '[s': 'Array',
+    '[u': 'Array',
+    '[i': 'Array',
+    '[f': 'Array',
+    '[d': 'Array',
+    '[b': 'Array',
+    '[r': 'RefArray'
+}

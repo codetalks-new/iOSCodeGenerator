@@ -3,7 +3,7 @@ from __future__ import  unicode_literals
 from cached_property import  cached_property
 from ios_code_generator.maps import ui_field_type_map, ui_image_field_types, ui_button_field_types, \
     ui_type_value_field_map, ui_type_value_type_map, ui_view_designed_init_map, ui_model_type_map, ui_field_attr_map, \
-    enum_raw_type_map, settings_raw_type_map,db_type_map
+    enum_raw_type_map, settings_raw_type_map,db_type_map,m_char_type_map
 from . import utils
 
 __author__ = 'banxi'
@@ -244,7 +244,27 @@ class ModelDecl(object):
             return self.camel_name
 
 
+    ####
+    ### Model Support
+    ###
+    @cached_property
+    def m_impl_eq(self):
+        return 'eq' in self.model_config
 
+    @cached_property
+    def m_impl_hash(self):
+        return 'hash' in self.model_config
+
+    @cached_property
+    def m_impl_tos(self):
+        return 'tos' in self.model_config
+
+    @cached_property
+    def m_has_id(self):
+        if not self.fields:return False
+        for f in self.fields:
+            if f.name == 'id': return True
+        return False
 
     def create_env(self):
         from .enviroment import  Environment
@@ -522,4 +542,115 @@ class UIField(object):
     @property
     def db_column_name(self):
         return db_type_map.get(self.ftype,'String')
+
+
+    ###
+    ### Model Support
+    ###
+
+    @cached_property
+    def m_type_class(self):
+        return m_char_type_map.get(self.ftype,'String')
+
+    @cached_property
+    def m_field_name(self):
+        return  _to_camelCase_varName(self.name)
+
+    @cached_property
+    def m_is_array(self):
+        return self.ftype[0] == '['
+
+    @cached_property
+    def m_is_date(self):
+        return self.ftype == 'di'
+
+    @cached_property
+    def m_is_simple(self):
+        return len(self.ftype) == 1
+
+    @cached_property
+    def m_is_complex(self):
+        return len(self.ftype) > 1
+
+    @cached_property
+    def m_is_ref(self):
+        return  self.ftype == 'r' or  self.ftype == '[r'
+
+
+    @property
+    def m_declare_stmt(self):
+        fname = self.m_field_name
+        type_class = self.m_type_class
+        if self.m_is_ref:
+            type_class = utils.snakelize(fname)
+        elif self.m_is_array:
+            type_char = self.ftype[1]
+            type_class = m_char_type_map.get(type_char,'String')
+
+        if self.m_is_array:
+            return 'let {fname} : [{type_class}]'.format(fname=fname,type_class=type_class)
+        else:
+            return 'let {fname} : {type_class}'.format(fname=fname,type_class=type_class)
+
+
+
+    @property
+    def m_init_stmt(self):
+        fname = self.m_field_name
+        type_name = self.m_type_class
+        if self.m_is_complex:
+            if self.m_is_array:
+                type_char = self.ftype[1]
+                raw_type_class = m_char_type_map.get(type_char,'String')
+                if type_char == 'r':
+                    type_name = utils.snakelize(fname)
+                    fname = utils.camelize(fname)
+                    return 'self.{fname} = {type_class}.arrayFrom(json["{fname}"])' \
+                        .format(fname=fname, type_class=type_name)
+                else:
+                    return  'self.{fname} = json["{fname}"].arrayObject as? [{type_class}] ?? []' \
+                        .format(fname=fname, type_class=raw_type_class)
+            else:
+                if self.m_is_date:
+                    tmp_value_stmt_tpl = 'let tmp_{fname}_value = json["{fname}"].{json_type}Value '
+                    json_type = "double"
+                    tmp_value_stmt = tmp_value_stmt_tpl.format(fname=fname, json_type=json_type)
+                    field_value_stmt = 'self.{fname} = NSDate(timeIntervalSince1970: tmp_{fname}_value)'.format(
+                        fname=fname)
+                    return '\n'.join([tmp_value_stmt, field_value_stmt])
+
+        else:
+            if self.ftype == 'r':
+                return ' self.{fname} = {type_name}(json:json["{fname}"])'.format(fname=fname, type_name=type_name)
+            elif self.ftype == 'u':
+                return 'self.{fname} = NSURL(string:json["{fname}"].stringValue)!'.format(fname=fname)
+            elif self.ftype == 'j':
+                return 'self.{fname} = json["{fname}"]'.format(fname=fname)
+            else:
+                json_type = type_name.lower()
+                return 'self.{fname} = json["{fname}"].{json_type}Value'.format(fname=fname, json_type=json_type)
+
+    @cached_property
+    def m_to_dict_stmt(self):
+        fname = self.m_field_name
+        if self.m_is_complex:
+            if self.m_is_array:
+                type_char = self.ftype[1]
+                if type_char == 'r':
+                    fname = utils.camelize(fname)
+                    return 'dict["{fname}"] = self.{fname}'.format(fname=fname) + ".map{ $0.toDict() }"
+
+            else:
+                if self.m_is_date:
+                    return '   dict["{fname}"] = self.{fname}.timeIntervalSince1970 '.format(fname=fname)
+
+        else:
+            if self.ftype == 'r':
+                return 'dict["{fname}"] = self.{fname}.toDict()'.format(fname=fname)
+            elif self.ftype == 'u':
+                return 'dict["{fname}"] = self.{fname}.absoluteString'.format(fname=fname)
+            elif self.ftype == 'j':
+                return 'dict["{fname}"] = self.{fname}.object'.format(fname=fname)
+
+        return  ' dict["{fname}"] = self.{fname}'.format(fname=fname)
 

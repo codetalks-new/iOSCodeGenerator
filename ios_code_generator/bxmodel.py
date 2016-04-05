@@ -120,57 +120,9 @@ def parse_line(line):
 
 
 def main():
-    declares = []
-    stmts = []
-    dict_stmts = []
-
-    comments = []
-    last_model_name = 'MyModel'
-    for line in sys.stdin:
-        line = line.strip()
-        if line:
-            comments.append("// "+line)
-            declare_list, stmt_list, dict_stmt_list, model_name = parse_line(line)
-            if model_name:
-                last_model_name = model_name
-            declares.extend(declare_list)
-            stmts.extend(stmt_list)
-            dict_stmts.extend(dict_stmt_list)
-    declare_stmts = '\n'.join(declares)
-    init_func_stmts = '\n'.join(stmts)
-    to_dict_stmts = '\n'.join(dict_stmts)
-    comment_stmts = '\n'.join(comments)
-
-    model_class_tpl = Template("""
-import SwiftyJSON
-import BXModel
-// Model Class Generated from templates
-$comment_stmts
-struct $model_name:BXModel {
-    $declare_stmts
-
-    init(json:JSON){
-        $init_func_stmts
-    }
-
-    func toDict() -> [String:AnyObject]{
-      var dict : [String:AnyObject] = [ : ]
-      $to_dict_stmts
-      return dict
-    }
-
-}
-    """)
-
-    model_class_stmt = model_class_tpl.substitute(
-        model_name=last_model_name,
-        comment_stmts=comment_stmts,
-        declare_stmts=declare_stmts,
-        init_func_stmts=init_func_stmts,
-        to_dict_stmts=to_dict_stmts
-        )
-
-    sys.stdout.write(model_class_stmt)
+  from .generators import  generate
+  text = generate('model')
+  print(text)
 
 def json_to_fields():
     from . import converters
