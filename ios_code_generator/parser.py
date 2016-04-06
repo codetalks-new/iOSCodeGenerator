@@ -18,7 +18,7 @@ constraint_config_item_pattern = re.compile(r'(?P<ctype>[a-zA-Z]+)(?P<relation>[
 attr_config_item_pattern = re.compile(r'(?P<ctype>[a-zA-Z]+)(?:(?P<svalue>\d+)|(?:=(?P<cvalue>#?[\w\u4e00-\u9fcc]+)))?')
 
 field_pattern = re.compile(r'(?P<fname>\w+)(?:\[(?P<constraints>[\w@>=<,]+)\])?(?:\((?P<attrs>[\w=#,\u4e00-\u9fcc]+)\))?')
-model_pattern = re.compile(r'(?P<name>\w+)(?:\((?P<attrs>[\w=,]+)\))?')
+model_pattern = re.compile(r'(?P<name>\w+)(?:\((?P<attrs>[\w=,/]+)\))?')
 int_value_pattern = re.compile(r'(?P<value>\d+)')
 
 

@@ -13,12 +13,9 @@ from StringIO import StringIO
 class MyTestCase(unittest.TestCase):
     def test_bxrouter(self):
         strio = StringIO(u"""
-        -BXRouter
-        api/product/isuser_product?id=24351:p
-        api/product/addUserProduct?id=24351
-        api/explore/explore_list?categoryId=&page=&size=10&exploreType=&title=
-        api/baike?id=101(p)
-        api/discover/commect_updo/id/47:p
+-ApiRouter(prefix=api/appShop)
+ /api/appShop/registerPush?deviceToken=
+ /api/appShop/index
         """)
         sys.stdin = strio
         bxrouter.main()

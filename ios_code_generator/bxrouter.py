@@ -76,11 +76,16 @@ class Router(object):
             return 'api'
 
     @cached_property
+    def prefix_comps(self):
+        return self.ignored_name_prefix.split('/')
+
+    @cached_property
     def name(self):
-        prefix = self.ignored_name_prefix
+        prefixs = self.prefix_comps
         path_comps = self.path_comps
-        if path_comps[0] == prefix:
-            path_comps = path_comps[1:]
+        for p in prefixs:
+            if path_comps[0] == p:
+                path_comps = path_comps[1:]
         return ''.join([utils.snakelize(comp) for comp in path_comps if comp])
 
     @property

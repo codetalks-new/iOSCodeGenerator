@@ -554,7 +554,7 @@ class UIField(object):
 
     @cached_property
     def m_field_name(self):
-        return  _to_camelCase_varName(self.name)
+        return  utils.camelize(self.name)
 
     @cached_property
     def m_is_array(self):
