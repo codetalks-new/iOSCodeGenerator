@@ -132,7 +132,7 @@ def json_to_fields():
     else:
         text = input
     fields = converters.convert_text_to_field_list(text)
-    output = ','.join(fields)
+    output = ';'.join([str(f) for f in fields])
     sys.stdout.write(output)
 
 

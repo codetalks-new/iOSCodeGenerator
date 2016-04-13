@@ -23,7 +23,7 @@ class {{ model.class_name }} : {{model.superclass}} {
     {% endfor %}
     {% if model.is_tvc %}
     init(){
-    super.init(style:.Grouped)
+    super.init(style:.Plain)
     }
 
     override init(style: UITableViewStyle){
@@ -78,7 +78,7 @@ class {{ model.class_name }} : {{model.superclass}} {
     {% endif %}
     {% if model.ui_has_refresh %}
         refreshControl = UIRefreshControl(frame: CGRectZero)
-        refreshControl?.addTarget(self, action: "refresh", forControlEvents: .ValueChanged)
+        refreshControl?.addTarget(self, action: #selector(refresh), forControlEvents: .ValueChanged)
     {% endif %}
     {% if model.ui_has_page %}
         bx_loadMoreControl = loadMoreControl
