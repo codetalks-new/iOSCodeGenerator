@@ -63,7 +63,6 @@ class Environment(object):
                     c_stmts.append(stmt+".install()")
         if c_stmts:
             text = '\n'.join(c_stmts)
-            text += '\n'
             return text
         else:
             return ''
@@ -117,7 +116,7 @@ class ConstraintConfigItem(object):
     @property
     def value_param_value(self):
         if self.ctype == 'e':
-            return 'UIEdgeInsets(top: {value}, left: {value}, bottom: {value}, right: {value})'.format( value=self.value)
+            return '{value}, left: {value}, bottom: {value}, right: {value}'.format( value=self.value)
         else:
             return self.value
 

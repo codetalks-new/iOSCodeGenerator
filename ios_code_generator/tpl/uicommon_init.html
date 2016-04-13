@@ -25,7 +25,12 @@
     }
 
     func installConstaints(){
-        {% for field in uifields %} {{ field.constraints_stmt }} {% endfor %}
+        {% for field in uifields %}
+        {% if field.constraints_stmt %}
+        {{ field.constraints_stmt }}
+
+        {% endif %}
+        {% endfor %}
     }
 
     func setupAttrs(){
