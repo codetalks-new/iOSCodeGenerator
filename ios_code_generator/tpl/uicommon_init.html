@@ -29,5 +29,10 @@
     }
 
     func setupAttrs(){
-        {% for field in uifields %} {{ field.attrs_stmt }} {% endfor %}
+        {% for field in uifields %}
+        {% if field.attrs_stmt %}
+        {{ field.attrs_stmt }}
+
+        {% endif %}
+        {% endfor %}
     }

@@ -514,13 +514,13 @@ class UIField(object):
 
         return stmt
 
-    @property
+    @cached_property
     def constraints_stmt(self):
         env = self.model.create_env()
         return env.generate_install_constraint_stmts(self)
 
 
-    @property
+    @cached_property
     def attrs_stmt(self):
         if not self.attrs:
             return ''
@@ -531,7 +531,6 @@ class UIField(object):
                 stmts.append(stmt)
         if stmts:
             text = '\n'.join(stmts)
-            text += '\n'
             return text
         else:
             return ''
