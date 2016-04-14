@@ -14,6 +14,8 @@ import BXForm
 {{ comment }}
 {% endfor %}
 
+{% set m = model %}
+{% set mname = model.vc_mname %}
 class {{ model.class_name }} : {{model.superclass}} {{  '' if model.ui_no_bind else ' ,BXBindable' }} {
     {% for field in uifields %}
     {{ field.declare_stmt }}
@@ -36,7 +38,9 @@ class {{ model.class_name }} : {{model.superclass}} {{  '' if model.ui_no_bind e
     {% endif %}
 
     {% if model.ui_has_bind %}
+    var item:{{mname}}?
     func bind(item:{{model.vc_mname}}){
+        self.item = item
     {% for field in uifields %}
         {% if field.can_bind_value %}
         {{field.bind_value_stmt}}

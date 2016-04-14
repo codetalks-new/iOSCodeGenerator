@@ -555,6 +555,7 @@ class UIField(object):
     def m_field_name(self):
         return  utils.camelize(self.name)
 
+
     @cached_property
     def m_is_array(self):
         return self.ftype[0] == '['
@@ -578,7 +579,7 @@ class UIField(object):
 
     @property
     def m_declare_stmt(self):
-        fname = self.m_field_name
+        fname = self.name
         type_class = self.m_type_class
         if self.m_is_ref:
             type_class = utils.snakelize(fname)
@@ -595,7 +596,7 @@ class UIField(object):
 
     @property
     def m_init_stmt(self):
-        fname = self.m_field_name
+        fname = self.name
         type_name = self.m_type_class
         if self.m_is_complex:
             if self.m_is_array:
@@ -631,7 +632,7 @@ class UIField(object):
 
     @cached_property
     def m_to_dict_stmt(self):
-        fname = self.m_field_name
+        fname = self.name
         if self.m_is_complex:
             if self.m_is_array:
                 type_char = self.ftype[1]

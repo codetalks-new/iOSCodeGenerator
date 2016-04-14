@@ -54,8 +54,10 @@ class MyTestCase(unittest.TestCase):
 
     def test_button_group(self):
         strio = StringIO("""
-        -JobUserCell(m=JobUser):button_group
-        view(f15,cst,text=录用):b
+        -CommentCell(m=Comment):button_group
+        viewCustomer:v
+        viewGoods:v
+        reply:v
         """)
         sys.stdin = strio
         text = ios_code_generator.generators.generate('button_group')
