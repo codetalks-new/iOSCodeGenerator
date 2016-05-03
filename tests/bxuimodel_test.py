@@ -54,10 +54,9 @@ class MyTestCase(unittest.TestCase):
 
     def test_button_group(self):
         strio = StringIO("""
-        -CommentCell(m=Comment):button_group
-        viewCustomer:v
-        viewGoods:v
-        reply:v
+        -GoodsCell(m=Goods):button_group
+        editStock(title=设置库存):b
+        cancelDelegate(title=取消代理):b
         """)
         sys.stdin = strio
         text = ios_code_generator.generators.generate('button_group')

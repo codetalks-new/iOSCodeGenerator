@@ -525,7 +525,7 @@ class UIField(object):
         if not self.attrs:
             return ''
         stmts = []
-        for ctype, item in self.attrs.iteritems():
+        for ctype, item in self.attrs.items():
             stmt = item.generate_bind_attr_value_stmt(self)
             if stmt:
                 stmts.append(stmt)
@@ -607,6 +607,8 @@ class UIField(object):
                     fname = utils.camelize(fname)
                     return 'self.{fname} = {type_class}.arrayFrom(json["{fname}"])' \
                         .format(fname=fname, type_class=type_name)
+                elif type_char == 'u':
+                    return  'self.{fname} = json["{fname}"].flatMap{ NSURL(string:$1.stringValue) } '
                 else:
                     return  'self.{fname} = json["{fname}"].arrayObject as? [{type_class}] ?? []' \
                         .format(fname=fname, type_class=raw_type_class)

@@ -52,6 +52,17 @@ class {{ model.class_name }} : {{model.superclass}} {
         let staticAdapter = StaticTableViewAdapter()
     {% endif %}
 
+    {% if m.has_attr('paction') %}
+    lazy var actionCell : PrimaryButtonCell = { [unowned self] in
+        let cell = PrimaryButtonCell()
+        cell.setPrimaryActionTitle("确定")
+        cell.primaryButton.setupAsPrimaryActionButton()
+        cell.buttonHorizontalInset = 15
+        cell.buttonMarginTop = 10
+        return cell
+    }()
+   {% endif %}
+
     override func viewDidLoad() {
     super.viewDidLoad()
     title = ""

@@ -196,7 +196,7 @@ class ConfigItem(object):
                 bind_value_tpl = "setTitleColor({value},forState: .Normal)"
             if prop_name == 'font':
                 bind_value_tpl = "titleLabel?.font = {value}"
-            if prop_name == 'text':
+            if prop_name in ['text','title']:
                 bind_value_tpl = 'setTitle("{value}",forState: .Normal)'
         tpl = "{field_name}."+bind_value_tpl
         return tpl.format(**ctx)
