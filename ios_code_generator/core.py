@@ -608,7 +608,7 @@ class UIField(object):
                     return 'self.{fname} = {type_class}.arrayFrom(json["{fname}"])' \
                         .format(fname=fname, type_class=type_name)
                 elif type_char == 'u':
-                    return  'self.{fname} = json["{fname}"].flatMap{ NSURL(string:$1.stringValue) } '
+                    return  'self.{fname} = json["{fname}"].flatMap{ $1.stringValue.quietUrl } '
                 else:
                     return  'self.{fname} = json["{fname}"].arrayObject as? [{type_class}] ?? []' \
                         .format(fname=fname, type_class=raw_type_class)
@@ -625,7 +625,7 @@ class UIField(object):
             if self.ftype == 'r':
                 return ' self.{fname} = {type_name}(json:json["{fname}"])'.format(fname=fname, type_name=type_name)
             elif self.ftype == 'u':
-                return 'self.{fname} = NSURL(string:json["{fname}"].stringValue)!'.format(fname=fname)
+                return 'self.{fname} = json["{fname}"].stringValue.quietUrl'.format(fname=fname)
             elif self.ftype == 'j':
                 return 'self.{fname} = json["{fname}"]'.format(fname=fname)
             else:
