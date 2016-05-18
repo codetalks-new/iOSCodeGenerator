@@ -71,6 +71,15 @@ class MyTestCase(unittest.TestCase):
         text = ios_code_generator.generators.generate('sqlite_model')
         print(text)
 
+    def test_sqlite_model2(self):
+        strio = StringIO("""
+         -ProductDownload
+        id;sourceType;thumb:u;name;model;type;fileURL;status
+        """)
+        sys.stdin = strio
+        text = ios_code_generator.generators.generate('sqlite_model')
+        print(text)
+
 
 if __name__ == '__main__':
     unittest.main()

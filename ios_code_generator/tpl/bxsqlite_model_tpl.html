@@ -3,6 +3,9 @@
 {% endfor %}
 import SQLite
 
+// import BXiOSUtils
+// private let db = try! Connection("\(bx_documentPath())/db.sqlite3")
+
 {% set m= model %}
 {% set mname = model.class_name %}
 {% set t_var = "t_"+m.class_name %}
@@ -10,7 +13,7 @@ import SQLite
 {% set s_var = model.camel_name+"Service" %}
 
 extension {{model.class_name}}{
-    typelias Columns = {{model.class_name}}Service.Columns
+    typealias Columns = {{model.class_name}}Service.Columns
     init(row:Row){
     {%  for uifield in uifields %}
         self.{{uifield.name}} = row[Columns.{{uifield.name}}]
@@ -81,7 +84,7 @@ class {{sname}}{
             {% endfor %}
             )
             let count = try db.run(stmt)
-            DDLogDebug("Insert success:\(rowId)")
+            DDLogDebug("Update success:\(count)")
             return count > 0
         }catch {
             DDLogError("Update failed:\(obj))")

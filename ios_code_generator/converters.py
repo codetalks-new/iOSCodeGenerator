@@ -24,8 +24,9 @@ class Field(object):
 
     @property
     def guess_type(self):
-        if self.value.startswith('http'):return 'u'
-        elif self.value.startswith('is'): return 'b'
+        if isinstance(self.value,(str,unicode)) :
+            if self.value.startswith('http'):return 'u'
+            elif self.value.startswith('is'): return 'b'
         elif self.name in ['created']: return 'di'
         return ''
 

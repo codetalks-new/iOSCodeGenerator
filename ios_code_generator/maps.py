@@ -33,6 +33,7 @@ ui_field_type_map = {
     'ol': 'OvalLabel',
     'ci': 'OvalImageView',
     'wv': 'WKWebView',
+    'uwv': 'UIWebView',
     'gbb': 'GroupButtonBar',
     'oi': 'OutlineImageView'
 }
@@ -130,20 +131,7 @@ settings_raw_type_map = {
     'u': 'NSURL',
     'd': 'NSDate',
 }
-ui_field_pin_map = {
-    'x': 'pinCenterX',
-    'y': 'pinCenterY',
-    'l': 'pinLeading',
-    't': 'pinTop',
-    'r': 'pinTrailing',
-    'b': 'pinBottom',
-    'w': 'pinWidth',
-    'h': 'pinHeight',
-    'a': 'pinAspectRatio',
-    'e': 'pinEdge',
-    'hor': 'pinHorizontal',
-    'ver': 'pinVertical',
-}
+
 ui_field_pa_map = {
     'x': 'pa_centerX',
     'y': 'pa_centerY',

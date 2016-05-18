@@ -482,7 +482,7 @@ class UIField(object):
 
     @property
     def declare_stmt(self):
-        frame_init = '{type_class}(frame:CGRectZero)'.format(type_class=self.type_class)
+        frame_init = '{type_class}(frame:CGRect.zero)'.format(type_class=self.type_class)
         construct_exp = ui_view_designed_init_map.get(self.ftype, frame_init)
         stmt = ' let {field_name} = {construct_exp}'.format(field_name=self.field_name, construct_exp=construct_exp)
         if self.ftype == 'tc':
@@ -497,7 +497,7 @@ class UIField(object):
         if self.ftype == 'c':
             stmt = ''' lazy var {field_name} :UICollectionView'''.format(field_name=self.field_name)
             stmt +=''' = { [unowned self] in
-            return UICollectionView(frame: CGRectZero, collectionViewLayout: self.flowLayout)
+            return UICollectionView(frame: CGRect.zero, collectionViewLayout: self.flowLayout)
       }()
             '''
             stmt += '''
@@ -608,7 +608,7 @@ class UIField(object):
                     return 'self.{fname} = {type_class}.arrayFrom(json["{fname}"])' \
                         .format(fname=fname, type_class=type_name)
                 elif type_char == 'u':
-                    return  'self.{fname} = json["{fname}"].flatMap{ $1.stringValue.quietUrl } '
+                    return  'self.{fname} = json["{fname}"].flatMap{ $1.stringValue.quietUrl } '.format(fname=fname)
                 else:
                     return  'self.{fname} = json["{fname}"].arrayObject as? [{type_class}] ?? []' \
                         .format(fname=fname, type_class=raw_type_class)
@@ -656,3 +656,8 @@ class UIField(object):
 
         return  ' dict["{fname}"] = self.{fname}'.format(fname=fname)
 
+    @cached_property
+    def setter_func_name(self):
+        if self.name.endswith('?'):
+            return self.name[:-1]
+        return self.name
