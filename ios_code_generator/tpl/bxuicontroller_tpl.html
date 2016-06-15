@@ -1,8 +1,5 @@
 import UIKit
 import SwiftyJSON
-import Bond
-import CocoaLumberjack
-import PromiseKit
 import BXModel
 import BXiOSUtils
 import Kingfisher
@@ -69,6 +66,15 @@ class {{ model.class_name }} : {{model.superclass}} {
     navigationItem.title = title
     {{ model.adapter_init }}
 
+    {% if model.has_attr('sadapter') %}
+    // staticAdapter.append()
+    // staticAdapter.appendContentsOf([])
+    staticAdapter.bindTo(tableView)
+    staticAdapter.didSelectCell = { cell, index in
+        self.didTapCell(cell)
+    }
+    {% endif %}
+
     {% if model.is_tvc %}
         clearsSelectionOnViewWillAppear = true
         tableView.keyboardDismissMode = .OnDrag
@@ -99,6 +105,14 @@ class {{ model.class_name }} : {{model.superclass}} {
     {% endif %}
 
     }
+
+    {% if model.has_attr('sadapter') %}
+    func didTapCell(cell:UITableViewCell){
+        switch cell{
+            default:break
+        }
+    }
+    {% endif %}
 
     {% if model.ui_has_tab %}
     var tabType:{{model.ui_tab_type_name}}!
@@ -162,18 +176,12 @@ class {{ model.class_name }} : {{model.superclass}} {
     {% if model.has_req %}
     // MARK: Load Data
         func loadData(){
-        {% if model.has_attr('service') %}
-        let params:Params = [:]
-        {{model.ui_service_name}}.listBy(params){ resp in
-          self.handleResponse(resp)
-        }
-        {% else %}
             let params:Params = [:]
-            request(ApiRouter.).responseApiResponse{ (resp:ApiResponse) in
-               self.handleResponse(resp)
+            ApiService.listBy(params){ resp in
+              self.handleResponse(resp)
             }
-        {% endif %}
         }
+
     // MARK: Handle Response
         func handleResponse(resp:ApiResponse){
         {% if model.ui_has_refresh %}
@@ -198,7 +206,7 @@ class {{ model.class_name }} : {{model.superclass}} {
           if hasMore{
             loadMoreControl.reset()
           }else{
-           loadMoreControl.nomore()
+           loadMoreControl.nomore(adapter.numberOfItems > pageSize)
           }
           isLoadingMore = false
         {% endif %}

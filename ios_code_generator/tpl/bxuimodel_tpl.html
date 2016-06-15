@@ -1,10 +1,7 @@
 import UIKit
 import BXModel
 {% if not model.ui_is_lib %}
-import Bond
-import CocoaLumberjack
 import SwiftyJSON
-import PromiseKit
 import BXiOSUtils
 import Kingfisher
 import BXForm
@@ -55,6 +52,16 @@ class {{ model.class_name }} : {{model.superclass}} {{  '' if model.ui_no_bind e
     }
 
     {%  include 'uicommon_init.html' %}
+
+
+    {% if m.has_attr('al') %}
+    class override func requiresConstraintBasedLayout() -> Bool{
+        return true
+    }
+    override func intrinsicContentSize() -> CGSize {
+        return CGSize.zero
+    }
+    {% endif %}
 
 }
 

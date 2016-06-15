@@ -8,6 +8,7 @@ ui_field_type_map = {
     'v': 'UIView',
     'i': 'UIImageView',
     'f': 'UITextField',
+    'ct': 'UIControl',
     't': 'UITableView',
     's': 'UIScrollView',
     'c': 'UICollectionView',
@@ -15,6 +16,7 @@ ui_field_type_map = {
     'p': 'UIPickerView',
     'cb': 'CheckboxButton',
     'ib': 'IconButton',
+    'vib': 'VerticalIconButton',
     'ob': 'OutlineButton',
     'sb': 'UISearchBar',
     'pc': 'UIPageControl',
@@ -38,6 +40,16 @@ ui_field_type_map = {
     'oi': 'OutlineImageView'
 }
 
+ui_field_custom_type_pure_name = {
+    "ib":"Button",
+    "cb":"Button",
+    "vib":"Button",
+    "ob":"Button",
+    "il":"Label",
+    "ol":"Label",
+    "ci":"ImageView",
+    "oi":"ImageView",
+}
 
 ui_image_field_types = [
     'i','oi','ci'
@@ -84,6 +96,7 @@ ui_model_type_map = {
     't': 'UITableView',
     's': 'UIScrollView',
     'c': 'UICollectionView',
+    'ct': 'UIControl',
     'tc': 'UITableViewCell',
     'stc': 'StaticTableViewCell',
     'cc': 'UICollectionViewCell',

@@ -68,9 +68,9 @@ class {{sname}}{
             )
             let rowId = try db.run(stmt)
             obj.id = Int(rowId)
-            DDLogDebug("Insert success:\(rowId)")
+            log.debug("Insert success:\(rowId)")
         }catch {
-            DDLogError("Insert failed:\(obj))")
+            log.error("Insert failed:\(obj))")
         }
     }
 
@@ -84,10 +84,10 @@ class {{sname}}{
             {% endfor %}
             )
             let count = try db.run(stmt)
-            DDLogDebug("Update success:\(count)")
+            log.debug("Update success:\(count)")
             return count > 0
         }catch {
-            DDLogError("Update failed:\(obj))")
+            log.error("Update failed:\(obj))")
             return false
         }
     }
@@ -100,7 +100,7 @@ class {{sname}}{
                 return true
             }
         }catch{
-            DDLogError("Delete failed \(obj) error:\(error))")
+            log.error("Delete failed \(obj) error:\(error))")
         }
         return false
     }
@@ -112,7 +112,7 @@ class {{sname}}{
                 return true
             }
         }catch{
-            DDLogError("Delete All Failed:\(error))")
+            log.error("Delete All Failed:\(error))")
         }
         return false
     }

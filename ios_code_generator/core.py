@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import  unicode_literals
 from cached_property import  cached_property
-from ios_code_generator.maps import ui_field_type_map, ui_image_field_types, ui_button_field_types, \
+from ios_code_generator.maps import ui_field_type_map, ui_field_custom_type_pure_name, ui_image_field_types, ui_button_field_types, \
     ui_type_value_field_map, ui_type_value_type_map, ui_view_designed_init_map, ui_model_type_map, ui_field_attr_map, \
     enum_raw_type_map, settings_raw_type_map,db_type_map,m_char_type_map
 from . import utils
@@ -298,6 +298,9 @@ class UIField(object):
         if self.model and self.model.is_button_group:
             return 'button'
         pure_type_name = self.type_class.replace('UI', '')
+        if not self.type_class.startswith("UI"):
+            if self.ftype in ui_field_custom_type_pure_name:
+                pure_type_name = ui_field_custom_type_pure_name.get(self.ftype)
         if self.ftype == 'tc':
             pure_type_name = 'Cell'
 

@@ -12,9 +12,9 @@ def generate(target='uimodel', **options):
     print("// Build for target " + target)
     lines = utils.readlines_from_stdin()
     comments = ["//"+line for line in lines]
-    model_decl,uifields = parse_source(lines)
+    model,uifields = parse_source(lines)
 
     template = jinja2_env.get_template('bx%s_tpl.html' % target)
-    has_textfield = len([field for field in uifields if field.ftype == 'f']) > 0
-    text = template.render(model=model_decl, uifields=uifields, has_textfield=has_textfield, comments=comments)
+    has_textfield = model.has_attr('kb') or len([field for field in uifields if field.ftype == 'f']) > 0
+    text = template.render(model=model, uifields=uifields, has_textfield=has_textfield, comments=comments)
     return text.encode('utf-8')

@@ -54,9 +54,10 @@ class MyTestCase(unittest.TestCase):
 
     def test_button_group(self):
         strio = StringIO("""
-        -GoodsCell(m=Goods):button_group
-        editStock(title=设置库存):b
-        cancelDelegate(title=取消代理):b
+        -AccountCell(m=Account):button_group
+        edit(title=设置库存):b
+        del(title=取消代理):b
+        update(title=取消代理):b
         """)
         sys.stdin = strio
         text = ios_code_generator.generators.generate('button_group')
@@ -73,8 +74,8 @@ class MyTestCase(unittest.TestCase):
 
     def test_sqlite_model2(self):
         strio = StringIO("""
-         -ProductDownload
-        id;sourceType;thumb:u;name;model;type;fileURL;status
+-MyDay
+id;udid;group_id:i;date:di;memo;color;status:i;countdown_enabled:b;cover;pics;extras:j
         """)
         sys.stdin = strio
         text = ios_code_generator.generators.generate('sqlite_model')
