@@ -20,33 +20,25 @@ class MyTestCase(unittest.TestCase):
         sys.stdin = strio
         bxrouter.main()
 
-    def test_bxrouter2(self):
-        strio = StringIO( u' -JobApiRouter(prefix=appJob)\n /appJob/companyInfoUpdate(params,c=中文-结构):post')
+    def test_bxrouter_01(self):
+        strio = StringIO( u'''
+        -CommonApiRouter(prefix=v1)\n
+        /v1/signup(params,c=注册):post
+        /v1/login(params,c=登录):post
+        /v1/token/refresh/(params,c=更新Token):patch
+        v1/logout/?login_id(c=注销登录):delete
+        '''
+        )
         sys.stdin = strio
         bxrouter.main()
 
     def test_bxapiService(self):
         strio = StringIO(u'''
--ApiRouter(prefix=/api)
-/api/user/sign_up(params):p
-/api/user/sign_in(params):p
-/api/user/forget_code(params):p
-/api/user/forget_set(params):p
-/api/user/my
-/api/user/cash_list
-/api/user/msg_list?page=1
-/api/user/msg_detail?id=1
-/api/user/profile(params):p
-/api/user/feedback(params):p
-/api/user/alipay_add(params):p
-/api/user/bank_add(params):p
-/api/industry/list(params)
-/api/category/list(params)
-/api/company/add(params):p
-/api/device/add(params):p
-/api/device/edit(params):p
-/api/device/list?page=1
-/api/device/detail?id=1
+        -ApiRouter(prefix=v1)\n
+        /v1/signup(params,c=注册):post
+        /v1/login(params,c=登录):post
+        /v1/token/refresh/(params,c=更新Token):patch
+        v1/logout/?login_id(c=注销登录):delete
 
         ''')
         sys.stdin = strio

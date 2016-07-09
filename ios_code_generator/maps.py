@@ -26,6 +26,7 @@ ui_field_type_map = {
     'sl': 'UISlider',
     'sc': 'UISegmentedControl',
     'tc': 'UITableViewCell',
+    'thf': 'UITableViewHeaderFooterView',
     'stc': 'StaticTableViewCell',
     'src': 'StarRatingControl',
     'tb': 'UIToolbar',

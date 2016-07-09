@@ -22,4 +22,14 @@ struct {{ model.class_name }} {
         }
     }
 {% endfor %}
+
+    static func registerDefaults(){
+        let defaults = [
+        {% for field in uifields %}
+            Keys.{{field.settings_name}}:{{field.settings_default_value}},
+        {% endfor %}
+        ]
+        userDefaults.registerDefaults(defaults)
+    }
+
 }

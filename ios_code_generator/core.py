@@ -357,6 +357,17 @@ class UIField(object):
         return settings_raw_type_map.get(self.ftype, 'String')
 
     @property
+    def settings_default_value(self):
+        map = {
+            'i': '0',
+            'b': 'false',
+            'f': '0',
+            's': '""',
+            '':'""'
+        }
+        return map.get(self.ftype, 'nil')
+
+    @property
     def settings_type_annotation(self):
         t = self.settings_type
         if self.ftype in ['b','i','f']:

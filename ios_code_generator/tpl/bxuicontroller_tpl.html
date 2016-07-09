@@ -71,7 +71,7 @@ class {{ model.class_name }} : {{model.superclass}} {
     // staticAdapter.appendContentsOf([])
     staticAdapter.bindTo(tableView)
     staticAdapter.didSelectCell = { cell, index in
-        self.didTapCell(cell)
+        self.onTapCell(cell)
     }
     {% endif %}
 
@@ -107,7 +107,7 @@ class {{ model.class_name }} : {{model.superclass}} {
     }
 
     {% if model.has_attr('sadapter') %}
-    func didTapCell(cell:UITableViewCell){
+    func onTapCell(cell:UITableViewCell){
         switch cell{
             default:break
         }

@@ -25,16 +25,14 @@ enum {{model.name}}:URLRequestConvertible{
     }
 
     var method:Alamofire.Method{
-        {% if post_routers|count > 0 %}
         switch self{
-        case {{ post_routers|map(attribute='dot_name')|join(',') }}:
-            return .POST
-        default:
+        {% for method,method_routers in routers|groupby('method_name') %}
+            case {{ method_routers|map(attribute='dot_name')|join(',') }}:
+                return .{{method}}
+        {% endfor %}
+            default:
             return .GET
         }
-        {% else %}
-        return .GET
-        {% endif %}
     }
     var isPublic:Bool{
         {% if public_routers|count > 0 %}

@@ -17,6 +17,11 @@ FIELD_DELIMETER = ';'
 
 # api/product/isuser_product?id=24351
 
+_method_map = {
+    'p':'POST',
+    'g': 'GET',
+    'd': 'DELETE'
+}
 
 class Router(object):
     def __init__(self,model, req, method='get', attrs=None):
@@ -36,6 +41,14 @@ class Router(object):
     @cached_property
     def is_post(self):
         return self.method in ['p','post']
+
+    @cached_property
+    def method_name(self):
+        name = _method_map.get(self.method)
+        if name:
+            return name
+        else:
+            return self.method.upper()
 
     def treat_last_id_path_as_query(self):
         if self.model:
