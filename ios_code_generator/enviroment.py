@@ -133,9 +133,6 @@ class ConfigItem(object):
         if self.value is not None:
             return self.value
         if self.complex_value is not None:
-            cvalue = self.complex_value
-            if cvalue.startswith('0x'):
-                return '+UIColor(hex:%s)' % cvalue
             return self.complex_value
         return ''
 
@@ -143,23 +140,22 @@ class ConfigItem(object):
     def value_comp(self):
         ## for cpt , return correspond colorValue
         func = ui_field_attr_map.get(self.ctype)
-        if func and func[0] == '+':
-            return func[1:]
-
         value = self.config_value
-        if not value:
-            return ''
-        if value[0] == '+':
-            return value[1:]
         if func:
+            if func[0] == '+':
+                return func[1:]
+            elif func[0] == '%':
+                return func[1:] % value
+            else:
                 return '%s(%s)' % (func,value)
         else:
             # support color value sketch
+            # 对于 `bg=cw` 这样的解析支持 . cw 值再从 颜色值配置表中读取
+            # 目前只支持颜色, 其他的属性没有必要
             if value.startswith('c') and len(value) <= 4:
                 color_value = ui_field_attr_map.get(value)
                 if color_value.startswith('+'):
                     return color_value[1:]
-
             # support custom prop custom value
             return value
 
@@ -193,11 +189,11 @@ class ConfigItem(object):
 
         if field.ftype in ui_button_field_types:
             if prop_name == 'textColor':
-                bind_value_tpl = "setTitleColor({value},forState: .Normal)"
+                bind_value_tpl = "setTitleColor({value},for: .normal)"
             if prop_name == 'font':
                 bind_value_tpl = "titleLabel?.font = {value}"
             if prop_name in ['text','title']:
-                bind_value_tpl = 'setTitle("{value}",forState: .Normal)'
+                bind_value_tpl = 'setTitle("{value}",for: .normal)'
         tpl = "{field_name}."+bind_value_tpl
         return tpl.format(**ctx)
 

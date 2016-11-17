@@ -1,0 +1,35 @@
+{% for comment in comments %}
+    {{ comment }}
+{% endfor %}
+
+struct {{ model.class_name }} {
+struct Keys{
+{% for field in fields %}
+    static let {{ field.settings_name }} = "{{ field.settings_key }}"
+{% endfor %}
+}
+
+static let  userDefaults = NSUserDefaults.standardUserDefaults()
+{% for field in fields %}
+    static var {{ field.name }}:{{ field.settings_type_annotation }}{
+    set{
+    {{ field.settings_set_stmt }}
+    {% if model.settings_sync_on_save %}
+        userDefaults.synchronize()
+    {% endif %}
+    }get{
+    {{ field.settings_get_stmt }}
+    }
+    }
+{% endfor %}
+
+static func registerDefaults(){
+let defaults = [
+{% for field in fields %}
+    Keys.{{ field.settings_name }}:{{ field.settings_default_value }},
+{% endfor %}
+]
+userDefaults.registerDefaults(defaults)
+}
+
+}

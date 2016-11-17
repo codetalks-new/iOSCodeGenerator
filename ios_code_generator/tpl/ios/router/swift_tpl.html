@@ -1,0 +1,62 @@
+{% for comment in comments %}
+{{ comment }}
+{% endfor %}
+
+{% macro request_option(router) %}
+    {% if router.has_param %}
+        {% if router.only_one_param %}
+            {% set key = router.first_query_name %}
+            case .{{ router.name }}(let {{ key }}):
+            return ("{{router.path}}", ["{{ key }}" : {{ key }}], .{{ router.method_name }})
+        {% else %}
+            case .{{ router.name }}(let params):
+            return ("{{router.path}}", params, .{{ router.method_name }})
+        {% endif %}
+    {% else %}
+        case  .{{ router.name }}
+        return ("{{router.path}}", nil, .{{ router.method_name }} )
+    {% endif %}
+{% endmacro %}
+
+{% if model %}
+enum {{model.name}}:URLRequestConvertible{
+{%  for router in routers %}
+    {{ router.case_stmt }}
+{% endfor %}
+
+    var isPublic:Bool{
+        {% if public_routers|count > 0 %}
+        switch self{
+        case {{ public_routers|map(attribute='dot_name')|join(',') }}:
+            return true
+        default:return false
+        }
+        {% else %}
+        return false
+        {% endif %}
+    }
+
+    var requestOption: (path:String,params:Params?,method:HTTPMethod) {
+        switch self{
+        {%  for router in routers %}
+            {{ request_option(router) }}
+        {% endfor %}
+        }
+    }
+
+    func asURLRequest() throws -> URLRequest{
+        let (path, params, method) =  requestOption
+        let baseURL = URL(string:API_BASE_URL)!
+        let fullURL =  baseURL.appendingPathComponent(path)
+        let urlRequest = URLRequest(url: fullURL, method: method.rawValue, headers: ["User-Agent": userAgent])
+        return URLEncoding.default.encode(urlRequest, with: params)
+    }
+}
+{% else %}
+    {%  for router in routers %}
+        {{ router.case_stmt }}
+    {% endfor %}
+    {% for router in routers  %}
+        {{ request_option(router) }}
+    {% endfor %}
+{% endif %}

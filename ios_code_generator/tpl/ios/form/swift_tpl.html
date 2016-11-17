@@ -1,0 +1,57 @@
+{% for comment in comments %}
+    {{ comment }}
+{% endfor %}
+{% set m = model %}
+{% if m.has_keyboard %}
+    {% include 'ios/controller/handle_keyboardEvents.html' %}
+{% endif %}
+// MARK: Post
+func trySave(){
+let fields = extractFormValue()
+do{
+try checkValues(fields)
+}catch{
+HUD.showErrorTip("")
+return
+}
+
+HUD.showProgress("")
+let params = BXField.fieldsAsParams(fields)
+request(CompanyApiRouter.Update(params: params)).responseApiResponse{ (resp:ApiResponse) in
+HUD.hideProgress(resp)
+}
+}
+
+// MARK: Outlets
+{% for field in fields %}
+    {{ field.outlet }}
+{% endfor %}
+{% include 'ios/view/outlets_group.html' %}
+
+// MARK: Form
+func extractFormValue() -> [BXField]{
+var fields = [BXField]()
+var field:BXField!
+{% for field in fields %}
+    {% if field.has_value %}
+        // extract {{ field.name }} Value
+        let {{ field.name }}Value = {{ field.field_name }}.text?.strip()
+        field = BXField(name:"{{ field.name }}",valueType:"{{ field.value_type }}")
+        field.value = {{ field.name }}Value
+        fields.append(field)
+    {% endif %}
+{% endfor %}
+return fields
+}
+
+func setFormValueWith(model:Model){
+{% for field in fields %}
+    {% if field.has_value %} {{ field.set_value_stmt }} {% endif %}
+{% endfor %}
+}
+
+func checkValues(fields:[BXField]) throws{
+for field in fields {
+try Validators.checkField(field)
+}
+}

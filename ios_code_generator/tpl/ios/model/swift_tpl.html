@@ -1,0 +1,54 @@
+import SwiftyJSON
+import BXModel
+{% for comment in comments %}
+    {{ comment }}
+{% endfor %}
+{% set m = model %}
+struct {{ m.class_name }} :BXModel{
+{% for field in fields %}
+    {{ field.declare_stmt }}
+{% endfor %}
+
+init(json:JSON){
+{% for field in fields %}
+    {{ field.init_stmt }}
+{% endfor %}
+}
+
+func toDict() -> [String:Any]{
+var dict : [String:Any] = [ : ]
+{% for field in fields %}
+    {{ field.to_dict_stmt }}
+{% endfor %}
+return dict
+}
+}
+
+{% if m.impl_eq %}
+    extension {{ m.class_name }}: Equatable{
+    }
+    func ==(lhs:{{ m.class_name }},rhs:{{ m.class_name }}) -> Bool{
+    {% if m.has_id %}
+        return lhs.id == rhs.id
+    {% else %}
+        return lhs. == rhs.
+    {% endif %}
+    }
+
+{% endif %}
+
+{% if m.impl_hash %}
+    extension  {{ m.class_name }} : Hashable{
+    {% if m.has_id %}
+        var hashValue:Int{ return id.hashValue   }
+    {% else %}
+        var hashValue:Int{ return   }
+    {% endif %}
+    }
+{% endif %}
+
+{% if m.impl_tos %}
+    extension {{ m.class_name }} : CustomStringConvertible{
+    var description:String {  return {{ m.guess_tos_field_name }} }
+    }
+{% endif %}

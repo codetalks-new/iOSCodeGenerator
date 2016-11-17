@@ -1,0 +1,116 @@
+{% for comment in comments %}
+{{ comment }}
+{% endfor %}
+import SQLite
+
+// import BXiOSUtils
+// fileprivate let db = try! Connection("\(bx_documentPath())/db.sqlite3")
+
+{% set m= model %}
+{% set mname = model.class_name %}
+{% set t_var = "t_"+m.class_name %}
+{% set sname = model.class_name+"Service" %}
+{% set s_var = model.mixed_name+"Service" %}
+
+extension {{model.class_name}}{
+    typealias Columns = {{model.class_name}}Service.Columns
+    init(row:Row){
+        self.rowid = row[Columns.rowid]
+    {%  for field in fields %}
+        self.{{field.field_name}} = row[Columns.{{field.field_name}}]
+    {% endfor %}
+    }
+}
+
+private let {{s_var}} = {{sname}}()
+
+class {{sname}}{
+    static let shared =  {{s_var}}
+    struct Columns  {
+        static let rowid = Expression<Int>("rowid")
+    {%  for field in fields %}
+        static let {{ field.field_name }} = Expression<{{field.db_column_name}}>("{{field.field_name}}")
+    {% endfor %}
+    }
+
+    let {{t_var}} = Table("{{m.db_table_name}}")
+    fileprivate init(){
+        let stmt =  {{t_var}}.create(ifNotExists:true){ t in
+                t.column(Columns.rowid, primaryKey:.autoincrement)
+                {%  for field in fields %}
+                t.column(Columns.{{field.field_name}})
+                {% endfor %}
+            }
+        try! db.run(stmt)
+    }
+
+    func query(queryType:QueryType) -> [{{m.class_name}}]{
+        var list = [{{m.class_name}}]()
+        for row in try! db.prepare(queryType.order(Columns.id.desc)) {
+            let obj = {{m.class_name}}(row:row)
+            list.append(obj)
+        }
+        return list
+    }
+
+    func all() -> [{{mname}}]{
+        return query(queryType:{{t_var}})
+    }
+
+    func add(obj:{{m.class_name}}){
+        do{
+            let stmt = {{t_var}}.insert(or: .replace,
+            {% for field in fields %}
+            Columns.{{field.field_name}} <- obj.{{field.field_name}} {% if not loop.last %}, {% endif %}
+            {% endfor %}
+            )
+            let rowId = try db.run(stmt)
+            obj.rowid = Int(rowId)
+            log.debug("Insert success:\(rowId)")
+        }catch {
+            log.error("Insert failed:\(obj))")
+        }
+    }
+
+    func update(obj:{{m.class_name}}) -> Bool {
+        do{
+            let stmt = {{t_var}}.filter(Columns.rowid == obj.rowid).update(
+            {% for field in fields %}
+            Columns.{{field.field_name}} <- obj.{{field.field_name}}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+            )
+            let count = try db.run(stmt)
+            log.debug("Update success:\(count)")
+            return count > 0
+        }catch {
+            log.error("Update failed:\(obj))")
+            return false
+        }
+    }
+
+
+    func delete(obj:{{mname}}) -> Bool{
+        do{
+            let stmt = {{t_var}}.filter(Columns.rowid == obj.rowid).delete()
+            if try db.run(stmt) > 0 {
+                return true
+            }
+        }catch{
+            log.error("Delete failed \(obj) error:\(error))")
+        }
+        return false
+    }
+
+    func deleteAll() -> Bool{
+        do{
+            let stmt = {{t_var}}.delete()
+            if try db.run(stmt) > 0 {
+                return true
+            }
+        }catch{
+            log.error("Delete All Failed:\(error))")
+        }
+        return false
+    }
+
+}

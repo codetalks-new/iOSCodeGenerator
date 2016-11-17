@@ -1,0 +1,45 @@
+{% for comment in comments %}
+{{ comment }}
+{% endfor %}
+enum {{ model.class_name }} {% if model.raw_type %}:{{ model.raw_type }}{% endif %} {
+ {%  for field in fields %}
+     {% if model.raw_type %}
+        {% if model.mtype == 's' %}
+        case {{ field.field_name }} =  "{{ field.name  }}"
+        {% elif model.mtype == 'i' %}
+        case {{ field.field_name }} =  {{model.start_value + loop.index0}}
+        {% else %}
+        case {{ field.field_name }}
+        {% endif %}
+     {% else %}
+     case {{ field.field_name }}
+     {% endif %}
+
+ {% endfor %}
+{% for field in fields %}
+    var is{{ field.camel_name }}:Bool{
+        return self == .{{ field.field_name }}
+    }
+{% endfor %}
+    var title:String{
+        switch self{
+        {% for field in fields %}
+        case .{{field.field_name}}:return "{{field.enum_title}}"
+        {% endfor %}
+        }
+    }
+
+    static let allCases:[{{ model.class_name }}] = [{{  fields|map(attribute='field_name')|join(',.') }}]
+}
+
+{% if model.has_icon %}
+extension  {{model.class_name}} {
+    var icon:UIImage{
+        switch self{
+        {% for field in fields %}
+            case .{{field.field_name}}:return Images..image
+        {% endfor %}
+        }
+    }
+}
+{% endif %}

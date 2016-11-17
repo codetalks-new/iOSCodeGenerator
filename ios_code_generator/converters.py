@@ -13,10 +13,10 @@ def json_loads_object_fragment(text):
     if not text.startswith('{'):
         text = '{'+text
     if not text.endswith('}'):
-        text = text + '}'
+        text += '}'
     return json.loads(text)
 
-class Field(object):
+class JSONField(object):
     def __init__(self,name,value,index=0):
         self.name = name
         self.value = value
@@ -38,7 +38,7 @@ class Field(object):
             return self.name
 
 def json_to_field_list(json_obj):
-    return [Field(k,v) for k,v in json_obj.items()]
+    return [JSONField(k, v) for k, v in json_obj.items()]
 
 def convert_text_to_field_list(text):
     json_obj = json_loads_object_fragment(text)

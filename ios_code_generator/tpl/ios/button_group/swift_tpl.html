@@ -1,0 +1,49 @@
+{% for comment in comments %}
+    {{ comment }}
+{% endfor %}
+{% set m = model %}
+// {{m.name}}Delegate
+protocol {{m.name}}Delegate:class{
+    {% for button in fields %}
+        func {{m.mixed_name}}(cell:{{m.name}},{{button.name}} {{m.mixed_model_name}}:{{m.model_name}})
+    {% endfor %}
+}
+
+// MARK: Button Groups
+{% for button in fields %}
+    lazy var {{button.name}}Button : {{ button.type_class }} = { [unowned self] in
+    let button = {{ button.construct_exp }}
+    button.addTarget(self, action: #selector(on{{button.camel_name}}ButtonPressed), for: .touchUpInside)
+    {{ button.attrs_stmt }}
+    return button
+    }()
+{% endfor %}
+
+{% for grouper,fields in fields|groupby('type_class') %}
+var all{{grouper}}Outlets :[{{grouper}}]{
+return [{{ fields|map(attribute='button_name')|join(',') }}]
+}
+{% endfor %}
+
+var delegate:{{m.name}}Delegate?
+
+// MARK: Button Group Actions
+{% for button in fields %}
+func on{{button.camel_name}}ButtonPressed(sender:UIButton){
+    guard let item = self.item else {
+        return
+    }
+    self.delegate?.{{m.mixed_name}}(self,{{button.name}}:item)
+}
+{% endfor %}
+
+// MARK: Confirm {{m.name}}Delegate
+extension UIViewController: {{m.name}}Delegate{
+{% for button in fields %}
+    func {{m.camel_name}}(cell:{{m.name}},{{button.name}} {{m.mixed_model_name}}:{{m.model_name}}){
+
+    }
+
+{% endfor %}
+}
+

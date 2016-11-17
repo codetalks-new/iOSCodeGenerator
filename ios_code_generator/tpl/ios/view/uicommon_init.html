@@ -1,0 +1,43 @@
+required init?(coder aDecoder: NSCoder) {
+super.init(coder: aDecoder)
+}
+
+{% include 'ios/view/outlets_group.html' %}
+
+func commonInit(){
+for childView in allOutlets{
+{% if 'Cell' in model.superclass %}
+    contentView.addSubview(childView)
+{% else %}
+    {% if model.is_vc %}
+        self.view.addSubview(childView)
+    {% else %}
+        addSubview(childView)
+    {% endif %}
+{% endif %}
+childView.translatesAutoresizingMaskIntoConstraints = false
+}
+installConstaints()
+setupAttrs()
+{% if not model.is_vc %}
+    {{ model.adapter_init }}
+{% endif %}
+}
+
+func installConstaints(){
+{% for field in fields %}
+    {% if field.constraints_stmt %}
+        {{ field.constraints_stmt }}
+
+    {% endif %}
+{% endfor %}
+}
+
+func setupAttrs(){
+{% for field in fields %}
+    {% if field.attrs_stmt %}
+        {{ field.attrs_stmt }}
+
+    {% endif %}
+{% endfor %}
+}
