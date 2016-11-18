@@ -59,7 +59,7 @@ class ViewField(Field):
 
     @property
     def declare_stmt(self):
-        frame_init = '{type_class}(frame:CGRect.zero)'.format(type_class=self.type_class)
+        frame_init = '{type_class}(frame:.zero)'.format(type_class=self.type_class)
         construct_exp = ui_view_designed_init_map.get(self.ftype, frame_init)
         stmt = ' let {field_name} = {construct_exp}'.format(field_name=self.field_name, construct_exp=construct_exp)
         if self.ftype == 'tc':
@@ -74,7 +74,7 @@ class ViewField(Field):
         if self.ftype == 'c':
             stmt = ''' lazy var {field_name} :UICollectionView'''.format(field_name=self.field_name)
             stmt += ''' = { [unowned self] in
-              return UICollectionView(frame: CGRect.zero, collectionViewLayout: self.flowLayout)
+              return UICollectionView(frame: .zero, collectionViewLayout: self.flowLayout)
         }()
               '''
             stmt += '''

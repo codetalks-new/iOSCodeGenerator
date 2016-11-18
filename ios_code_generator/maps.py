@@ -88,7 +88,7 @@ ui_type_value_type_map = {
 }
 ui_view_designed_init_map = {
     'b': 'UIButton(type:.system)',
-    'c': ' UICollectionView(frame: CGRect.zero, collectionViewLayout: UICollectionViewFlowLayout())',
+    'c': ' UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())',
     'sb': 'UISearchBar()',
     'gbb': 'GroupButtonBar(buttons:[])'
 }

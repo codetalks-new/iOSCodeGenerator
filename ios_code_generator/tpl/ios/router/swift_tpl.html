@@ -48,8 +48,8 @@ enum {{model.name}}:URLRequestConvertible{
         let (path, params, method) =  requestOption
         let baseURL = URL(string:API_BASE_URL)!
         let fullURL =  baseURL.appendingPathComponent(path)
-        let urlRequest = URLRequest(url: fullURL, method: method.rawValue, headers: ["User-Agent": userAgent])
-        return URLEncoding.default.encode(urlRequest, with: params)
+        let urlRequest = try URLRequest(url: fullURL, method: method, headers: ["User-Agent": appUserAgent])
+        return try URLEncoding.default.encode(urlRequest, with: params)
     }
 }
 {% else %}
