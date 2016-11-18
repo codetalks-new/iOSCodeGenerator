@@ -53,7 +53,7 @@ class ViewField(Field):
             return ' {field_name}.{value_field}  = item.{name} '.format(**ctx)
         elif self.ftype in ui_image_field_types:  # UIImage NSURL
             ctx = dict(name=self.name, field_name=self.field_name)
-            return ' {field_name}.kf_setImageWithURL(item.{name})'.format(**ctx)
+            return ' {field_name}.kf.setImage(with: item.{name})'.format(**ctx)
         else:
             return ''
 
@@ -120,7 +120,7 @@ class ViewField(Field):
 
         elif self.ftype == 'i':  # UIImage NSURL
             ctx = dict(name=self.name, field_name=self.field_name)
-            return ' {field_name}.kf_setImageWithURL(item.{name})'.format(**ctx)
+            return ' {field_name}.kf.setImage(with: item.{name})'.format(**ctx)
 
         else:
             return ''
