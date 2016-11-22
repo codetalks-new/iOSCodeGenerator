@@ -23,3 +23,16 @@ def test_fontConfig():
     sys.stdin = strio
     output = generate_v2("view")
     print(output)
+
+def test_goodsCell():
+    strio = StringIO(u"""
+    GoodsCell(m=Goods):tc
+    icon[y, w64, a1, l15]:i
+    title[t0@icon, at15@icon](f17, cpt)
+    desc[bl4@title, l0@title](f13, cst)
+    fee[t0@title, r15](cw, f15):il
+    """)
+    sys.stdin = strio
+    output = generate_v2("view")
+    print(output)
+

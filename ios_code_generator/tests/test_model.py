@@ -8,7 +8,7 @@ from ios_code_generator.generators import generate
 __author__ = 'banxi'
 
 def test_data_model():
-    strio = StringIO(u"-User(tos,hash,eq)\nid:i;url:u;title;author:r;follow:[r;counts:[i;created:di;realname\n")
+    strio = StringIO(u"-User(tos,hash,eq)\nid:i;url:[u;title;author:r;follow:[r;counts:[i;created:di;realname\n")
     sys.stdin = strio
     text = generate("model")
     print(text)
@@ -21,7 +21,7 @@ def test_refModel():
 
 def test_with_underscore():
     strio = StringIO(u"""
-MyDay
+MyDay(tos)
 id;udid;group_id:i;date:di;memo;color;status:i;countdown_enabled:b;cover;pics;extras:j
     """)
     sys.stdin = strio

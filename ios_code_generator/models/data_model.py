@@ -55,46 +55,48 @@ class DataField(Field):
 
     @property
     def init_stmt(self):
+        from string import Template
         ctx = {
             'name': self.name,
             'field_name': self.field_name,
             'type_class': self.type_class
         }
-        tpl = "self.{field_name} = "
+        tpl = "self.$field_name = "
         if self.is_complex:
             if self.is_array:
                 type_char = self.ftype[1]
                 if type_char == 'r':
-                    tpl += '{type_class}.arrayFrom(json["{name}"])'
+                    tpl += '$type_class.arrayFrom(json["$name"])'
                 elif type_char == 'u':
-                    tpl += 'json["{name}"].flatMap{ $1.stringValue.quietUrl } '
+                    tpl += 'json["$name"].flatMap{ $$1.stringValue.quietUrl } '
                 else:
-                    tpl += 'json["{name}"].arrayObject as? [{type_class}] ?? []'
+                    tpl += 'json["$name"].arrayObject as? [$type_class] ?? []'
             else:
                 if self.is_date:
                     tmp_value_stmt = 'let tmp_{name}_value = json["{name}"].{json_type}Value '\
                         .format(name=self.name, json_type="double")
                     tpl = tmp_value_stmt + "\n" + tpl
-                    tpl += 'Date(timeIntervalSince1970: tmp_{name}_value)'
+                    tpl += 'Date(timeIntervalSince1970: tmp_${name}_value)'
 
         else:
             if self.ftype == 'r':
-                tpl += '{type_name}(json:json["{name}"])'
+                tpl += '$type_class(json:json["$name"])'
             elif self.ftype == 'u':
-                tpl += ' json["{name}"].stringValue.quietUrl'
+                tpl += ' json["$name"].stringValue.quietUrl'
             elif self.ftype == 'j':
-                tpl += ' json["{name}"]'
+                tpl += ' json["$name"]'
             else:
                 json_type = ctx['type_class'].lower()
                 ctx['json_type'] = json_type
-                tpl += ' json["{name}"].{json_type}Value'
+                tpl += ' json["$name"].${json_type}Value'
 
-        stmt =  tpl.format(**ctx)
+        stmt =  Template(tpl).safe_substitute(**ctx)
         return stmt
 
     @cached_property
     def to_dict_stmt(self):
-        tpl = 'dict["{name}"] = self.{field_name}'
+        from string import Template
+        tpl = 'dict["$name"] = self.$field_name'
         if self.is_complex:
             if self.is_array:
                 tpl += ".map{ $0.toDict() }"
@@ -109,7 +111,7 @@ class DataField(Field):
             elif self.ftype == 'j':
                 tpl += ".object"
 
-        return tpl.format(name=self.name, field_name=self.field_name)
+        return Template(tpl).safe_substitute(name=self.name, field_name=self.field_name)
 
 
 @as_ios_swift_generator("model")

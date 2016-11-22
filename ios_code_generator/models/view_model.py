@@ -94,7 +94,10 @@ class ViewField(Field):
     @cached_property
     def constraints_stmt(self):
         env = self.model.create_env()
-        return env.generate_install_constraint_stmts(self)
+        try:
+            return env.generate_install_constraint_stmts(self)
+        except Exception as e:
+            return e.message
 
     @cached_property
     def attrs_stmt(self):
@@ -102,7 +105,10 @@ class ViewField(Field):
             return ''
         stmts = []
         for ctype, item in self.attrs.items():
-            stmt = item.generate_bind_attr_value_stmt(self)
+            try:
+                stmt = item.generate_bind_attr_value_stmt(self)
+            except Exception as e:
+                stmt = e.message
             if stmt:
                 stmts.append(stmt)
         if stmts:
@@ -147,7 +153,7 @@ class ViewModel(Model):
     is_autolayout = model_bool_property(['al', 'autolayout'])
     has_adapter = model_bool_property('adapter')
     has_static_adapter = model_bool_property('sadapter')
-
+    is_vc = False
     @property
     def superclass(self):
         return  ui_model_type_map.get(self.mtype, 'UIView')
