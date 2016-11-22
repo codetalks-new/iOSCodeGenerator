@@ -49,6 +49,6 @@ return dict
 
 {% if m.impl_tos %}
     extension {{ m.class_name }} : CustomStringConvertible{
-    var description:String {  return {{ m.guess_tos_field_name }} }
+    var description:String {  return {{ m.guess_tos_field_name() }} }
     }
 {% endif %}
