@@ -94,7 +94,7 @@ navigationItem.title = title
     loadData()
 {% endif %}
 {% if model.has_refresh %}
-    refreshControl = UIRefreshControl(frame: CGRect.zero)
+    refreshControl = UIRefreshControl(frame: .zero)
     refreshControl?.addTarget(self, action: #selector(refresh), for: .valueChanged)
 {% endif %}
 {% if model.has_page %}
@@ -191,7 +191,7 @@ navigationItem.title = title
         }
     {% endif %}
     if resp.ok{
-    self.handleLoadedData(resp)
+    self.handleLoadedData(_ resp)
     }else{
     {% if model.has_page %}
         if isLoadingMore{

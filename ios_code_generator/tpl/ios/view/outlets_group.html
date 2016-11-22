@@ -1,7 +1,7 @@
 var allOutlets :[UIView]{
-    return [{{ uifields|map(attribute='field_name')|join(',') }}]
+    return [{{ fields|map(attribute='field_name')|join(',') }}]
 }
-{% for grouper,fields in uifields|groupby('type_class') %}
+{% for grouper,fields in fields|groupby('type_class') %}
 var all{{grouper}}Outlets :[{{grouper}}]{
     return [{{ fields|map(attribute='field_name')|join(',') }}]
 }
