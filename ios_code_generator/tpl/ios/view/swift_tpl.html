@@ -12,7 +12,7 @@ import BXModel
 {% endfor %}
 
 {% set m = model %}
-{% set mname = model.vc_mname %}
+{% set mname = model.ui_model_name %}
 class {{ model.class_name }} : {{ model.superclass }} {{ '' if model.ui_no_bind else ' ,BXBindable' }} {
 {% for field in fields %}
     {{ field.declare_stmt }}
@@ -36,7 +36,7 @@ class {{ model.class_name }} : {{ model.superclass }} {{ '' if model.ui_no_bind 
 
 {% if model.ui_has_bind %}
     var item:{{ mname }}?
-    func bind(item:{{ mname }}){
+    func bind(_ item:{{ mname }}){
     self.item = item
     {% for field in fields %}
         {% if field.can_bind_value %}

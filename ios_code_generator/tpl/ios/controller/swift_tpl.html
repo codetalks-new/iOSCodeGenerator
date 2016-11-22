@@ -71,7 +71,7 @@ navigationItem.title = title
     // staticAdapter.appendContentsOf([])
     staticAdapter.bindTo(tableView)
     staticAdapter.didSelectCell = { cell, index in
-    self.onTapCell(cell)
+    self.onTap(cell: cell)
     }
 {% endif %}
 
@@ -107,7 +107,7 @@ navigationItem.title = title
 }
 
 {% if model.has_sadapter %}
-    func onTapCell(cell:UITableViewCell){
+    func onTap(cell:UITableViewCell){
     switch cell{
     default:break
     }
@@ -178,12 +178,12 @@ navigationItem.title = title
     func loadData(){
     let params:Params = [:]
     ApiService.listBy(params){ resp in
-    self.handleResponse(resp)
+    self.handle(resp: resp)
     }
     }
 
     // MARK: Handle Response
-    func handleResponse(resp:ApiResponse){
+    func handle(resp:ApiResponse){
     {% if model.has_refresh %}
         if refreshing{
         refreshing = false

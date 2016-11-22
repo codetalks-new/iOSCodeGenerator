@@ -164,7 +164,7 @@ class ViewModel(Model):
 
     @cached_property
     def ui_model_name(self):
-        return self.model_config.get('m','T')
+        return self.model_name
 
     @cached_property
     def ui_model_field_name(self):
