@@ -13,7 +13,7 @@ import BXForm
     {{ comment }}
 {% endfor %}
 
-class {{ model.class_name }} : {{ model.superclass }} {
+class {{ model.class_name }} : {{ model.superclass }} {% if model.has_adapter %}, ListViewController {% endif %} {
 
 {% for field in fields %}
     {{ field.declare_stmt }}
@@ -43,9 +43,15 @@ self.view.backgroundColor = .background
 commonInit()
 }
 
-{{ model.adapter_decl }}
+{%  if model.has_adapter %}
+    typealias ModelType = {{ m.ui_model_name }}
+    let adapter = SimpleGenericTableViewAdapter<{{ m.ui_model_name }},{{ m.ui_cell_name }}>()
+    var modelAdapter: SimpleGenericDataSource<{{ m.ui_model_name }}>{
+    return adapter
+    }
+{%  endif %}
 
-{% if model.has_sadapter %}
+{% if model.has_static_adapter %}
     let staticAdapter = StaticTableViewAdapter()
 {% endif %}
 
@@ -64,11 +70,17 @@ override func viewDidLoad() {
 super.viewDidLoad()
 title = ""
 navigationItem.title = title
-{{ model.adapter_init }}
+{% if model.has_adapter %}
+    {% if  model.adapter_type == 'c' %}
+        adapter.bindTo(collectionView)
+    {% else %}
+        adapter.bindTo(tableView)
+    {% endif %}
+{% endif %}
 
-{% if model.has_sadapter %}
+{% if model.has_static_adapter %}
     // staticAdapter.append()
-    // staticAdapter.appendContentsOf([])
+    // staticAdapter.append(contentsOf:[])
     staticAdapter.bindTo(tableView)
     staticAdapter.didSelectCell = { cell, index in
     self.onTap(cell: cell)
@@ -95,12 +107,12 @@ navigationItem.title = title
 {% endif %}
 {% if model.has_refresh %}
     refreshControl = UIRefreshControl(frame: .zero)
-    refreshControl?.addTarget(self, action: #selector(refresh), for: .valueChanged)
+    refreshControl?.addTarget(self, action: #selector(onRefresh), for: .valueChanged)
 {% endif %}
 {% if model.has_page %}
     bx_loadMoreControl = loadMoreControl
     loadMoreControl.onLoadingHandler = {
-    self.loadMore()
+        self.loadMoreData()
     }
 {% endif %}
 
@@ -122,119 +134,28 @@ navigationItem.title = title
     func show{{ model.ui_model_name }}Detail(item:{{ model.ui_model_name }}){
     let vc = {{ model.ui_detail_vc_name }}()
     vc.{{ model.ui_camel_mname }} = item
-    showViewController(vc,sender:self)
+    show(vc,sender:self)
     }
 {% endif %}
 
 {% if model.has_page %}
-    var page = 1
-    var hasMore = true
-    var isLoadingMore = false
-
-    lazy var loadMoreControl = BXLoadMoreControl()
-    func loadMore(){
-    if !hasMore{
-    loadMoreControl.endLoading()
-    loadMoreControl.nomore()
-    }
-    {% if model.has_search %} search = ""  {% endif %}
-    page = page + 1
-    isLoadingMore = true
-    loadData()
-    }
-
+    var loadMoreControl = BXLoadMoreControl()
 {% endif %}
 
 {% if model.has_search %}
-    private var search:String = ""
-    func searchByText(text:String){
-    search = text.trimmed()
-    if search.isEmpty{
-    HUD.showErrorTip("搜索词不能为空")
-    return
-    }
-    adapter.updateItems([])
-    page = 1
-    loadData()
-    }
 {% endif %}
 {% if model.has_refresh %}
-    var refreshing = false
-    func refresh(){
-    refreshing = true
-    refreshControl?.beginRefreshing()
-    reloadData()
-    }
-
-    func reloadData(){
-    {% if m.has_search %} search = "" {% endif %}
-    page = 1
-    adapter.updateItems([])
-    loadData()
+    func onRefresh(){
+        self.refreshData()
     }
 {% endif %}
 {% if model.has_req %}
     // MARK: Load Data
     func loadData(){
-    let params:Params = [:]
-    ApiService.listBy(params){ resp in
-    self.handle(resp: resp)
-    }
-    }
-
-    // MARK: Handle Response
-    func handle(resp:ApiResponse){
-    {% if model.has_refresh %}
-        if refreshing{
-        refreshing = false
-        refreshControl?.endRefreshing()
+        let params:Params = [:]
+        ApiService.listBy(params){ resp in
+        self.handle(resp: resp)
         }
-    {% endif %}
-    if resp.ok{
-    self.handleLoadedData(_ resp)
-    }else{
-    {% if model.has_page %}
-        if isLoadingMore{
-        page = page - 1 // rollback
-        }
-    {% endif %}
-    }
-    {% if model.ui_has_page %}
-        if isLoadingMore{
-        loadMoreControl.endLoading()
-        }
-        if hasMore{
-        loadMoreControl.reset()
-        }else{
-        loadMoreControl.nomore(adapter.numberOfItems > pageSize)
-        }
-        isLoadingMore = false
-    {% endif %}
-    }
-    // MARK: Handle Loaded Data
-    func handleLoadedData(resp:ApiResponse){
-    {% if model.has_adapter %}
-        let data = resp.data
-        let items = {{ model.ui_model_name }}.arrayFrom(data)
-        {% if model.has_page %}
-            if isLoadingMore{
-            adapter.appendItems(items)
-            }else{
-            adapter.updateItems(items)
-            }
-            hasMore = items.count >= pageSize
-        {% else %}
-            adapter.updateItems(items)
-        {% endif %}
-
-        {% if model.has_search %}
-            if search.isNotEmpty{
-            if items.isEmpty{
-            HUD.showErrorTip(" 搜索结果为空")
-            }
-            }
-        {% endif %}
-    {% endif %}
     }
 {% endif %}
 

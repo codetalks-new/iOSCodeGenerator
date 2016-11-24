@@ -122,6 +122,29 @@ class DataModel(Model):
     impl_tos = model_bool_property('tos')
     is_class = model_bool_property(['c','class'])
 
+    is_public = model_bool_property(['public'])
+    is_open = model_bool_property(['open'])
+
+
+    @cached_property
+    def access_level_modifier(self):
+        if self.is_open:
+            return "open "
+        if self.is_public:
+            return "public "
+        return ""
+
+
+    @cached_property
+    def identifier_field_name(self):
+        for name in ['_id', 'id', 'code']:
+            if name in self.field_names:
+                return name
+        for name in self.field_names:
+            if name.endswith("id"):
+                return name
+        return ""
+
     @cached_property
     def has_id(self):
         if not self.fields:return False

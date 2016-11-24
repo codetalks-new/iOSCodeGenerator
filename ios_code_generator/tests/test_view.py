@@ -36,3 +36,12 @@ def test_goodsCell():
     output = generate_v2("view")
     print(output)
 
+def test_emptyView():
+    strio = StringIO(u"""
+    EmptyView:v
+    refresh[hor0,bl16@desc,h36](f17,cpt):b
+    """)
+    sys.stdin = strio
+    output = generate_v2("view")
+    print(output)
+

@@ -17,3 +17,11 @@ def test_controller():
     sys.stdin = strio
     output = generate_v2("controller")
     print(output)
+
+def test_sadapter():
+    strio = StringIO(u'''
+    -DiscoverViewController(sadapter):tvc
+    ''')
+    sys.stdin = strio
+    output = generate_v2("controller")
+    print(output)

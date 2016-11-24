@@ -228,7 +228,7 @@ class ViewModel(Model):
 
     @cached_property
     def ui_no_bind(self):
-        return 'nobind' in self.model_config
+        return  'm' not in self.model_config
 
     @cached_property
     def ui_has_bind(self):

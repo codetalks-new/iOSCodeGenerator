@@ -4,18 +4,18 @@ import BXModel
     {{ comment }}
 {% endfor %}
 {% set m = model %}
-struct {{ m.class_name }} :BXModel{
+{{ m.access_level_modifier }}  struct {{ m.class_name }} :BXModel{
 {% for field in fields %}
-    {{ field.declare_stmt }}
+  {{ m.access_level_modifier }}  {{ field.declare_stmt }}
 {% endfor %}
 
-init(json:JSON){
+{{ m.access_level_modifier }}  init(json:JSON){
 {% for field in fields %}
     {{ field.init_stmt }}
 {% endfor %}
 }
 
-func toDict() -> [String:Any]{
+{{ m.access_level_modifier }}  func toDict() -> [String:Any]{
 var dict : [String:Any] = [ : ]
 {% for field in fields %}
     {{ field.to_dict_stmt }}
@@ -27,28 +27,20 @@ return dict
 {% if m.impl_eq %}
     extension {{ m.class_name }}: Equatable{
     }
-    func ==(lhs:{{ m.class_name }},rhs:{{ m.class_name }}) -> Bool{
-    {% if m.has_id %}
-        return lhs.id == rhs.id
-    {% else %}
-        return lhs. == rhs.
-    {% endif %}
+    {{ m.access_level_modifier }}  func ==(lhs:{{ m.class_name }},rhs:{{ m.class_name }}) -> Bool{
+        return lhs.{{m.identifier_field_name  }} == rhs.{{ m.identifier_field_name }}
     }
 
 {% endif %}
 
 {% if m.impl_hash %}
     extension  {{ m.class_name }} : Hashable{
-    {% if m.has_id %}
-        var hashValue:Int{ return id.hashValue   }
-    {% else %}
-        var hashValue:Int{ return   }
-    {% endif %}
+    {{ m.access_level_modifier }}  var hashValue:Int{ return {{ m.identifier_field_name}}.hashValue   }
     }
 {% endif %}
 
 {% if m.impl_tos %}
     extension {{ m.class_name }} : CustomStringConvertible{
-    var description:String {  return {{ m.guess_tos_field_name() }} }
+    {{ m.access_level_modifier }}  var description:String {  return {{ m.guess_tos_field_name() }} }
     }
 {% endif %}

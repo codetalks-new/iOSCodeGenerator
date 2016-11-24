@@ -30,14 +30,15 @@ class Environment(object):
             return '%s.%s(%s)' % (field.field_name, func_name,param_value)
         elif config.secondItem:
             anchor_field = self.field_by_name(config.secondItem)
+            anchor_field_name = anchor_field.field_name if anchor_field else config.secondItem
             if config.is_relative_layout:
                 # logoImageView.pa_below(titleLabel,offset:30)
                 return '%s.%s(%s,offset:%s)%s' % (field.field_name,
-                                                  func_name,anchor_field.field_name,param_value,config.relation_suffix)
+                                                  func_name,anchor_field_name,param_value,config.relation_suffix)
             else:
                 # logoImageView.pa_leading.eqTo(titleLabel).offset(30)
                 return '%s.%s.%sTo(%s).offset(%s)' % (field.field_name,
-                                                      func_name,config.relation_func_name, anchor_field.field_name,param_value)
+                                                      func_name,config.relation_func_name, anchor_field_name,param_value)
 
         else:
             if self.in_vc and config.is_top_or_bottom:
