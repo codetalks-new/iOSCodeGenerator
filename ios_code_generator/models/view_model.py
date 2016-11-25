@@ -28,7 +28,7 @@ class ViewField(Field):
         if not self.type_class.startswith("UI"):
             if self.ftype in ui_field_custom_type_pure_name:
                 pure_type_name = ui_field_custom_type_pure_name.get(self.ftype)
-        if self.ftype == 'tc':
+        if pure_type_name.endswith('Cell'):
             pure_type_name = 'Cell'
 
         if self.name == '_':

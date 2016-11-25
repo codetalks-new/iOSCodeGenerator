@@ -21,6 +21,8 @@ def test_controller():
 def test_sadapter():
     strio = StringIO(u'''
     -DiscoverViewController(sadapter):tvc
+    name:ltc
+    area:rdc
     ''')
     sys.stdin = strio
     output = generate_v2("controller")

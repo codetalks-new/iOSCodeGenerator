@@ -28,6 +28,8 @@ ui_field_type_map = {
     'tc': 'UITableViewCell',
     'thf': 'UITableViewHeaderFooterView',
     'stc': 'StaticTableViewCell',
+    'ltc': 'LabelTextCell',
+    'rdc': 'AppRightDetailCell',
     'src': 'StarRatingControl',
     'tb': 'UIToolbar',
     'ctb': 'ConfirmTitleBar',
