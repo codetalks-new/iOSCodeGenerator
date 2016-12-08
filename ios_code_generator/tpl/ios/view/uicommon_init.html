@@ -17,14 +17,14 @@ for childView in allOutlets{
 {% endif %}
 childView.translatesAutoresizingMaskIntoConstraints = false
 }
-installConstaints()
+installConstraints()
 setupAttrs()
 {% if not model.is_vc %}
     {{ model.adapter_init }}
 {% endif %}
 }
 
-func installConstaints(){
+func installConstraints(){
 {% for field in fields %}
     {% if field.constraints_stmt %}
         {{ field.constraints_stmt }}
