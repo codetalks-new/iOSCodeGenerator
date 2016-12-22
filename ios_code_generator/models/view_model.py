@@ -153,6 +153,7 @@ class ViewModel(Model):
     is_autolayout = model_bool_property(['al', 'autolayout'])
     has_adapter = model_bool_property('adapter')
     has_static_adapter = model_bool_property('sadapter')
+    no_init = model_bool_property("no_init")
     is_vc = False
     @property
     def superclass(self):

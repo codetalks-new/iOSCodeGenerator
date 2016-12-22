@@ -52,6 +52,8 @@ class ControllerModel(ViewModel):
     has_primary_action = model_bool_property(["paction","primary_action"]) # primary action
     has_keyboard = model_bool_property(["kb","keyboard"])
 
+    has_search_ui = model_bool_property("search_ui")
+
     is_vc = True
 
     @property
