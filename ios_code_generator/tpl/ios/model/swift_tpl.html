@@ -26,10 +26,11 @@ return dict
 
 {% if m.impl_eq %}
     extension {{ m.class_name }}: Equatable{
-    }
-    {{ m.access_level_modifier }}  func ==(lhs:{{ m.class_name }},rhs:{{ m.class_name }}) -> Bool{
+        {{ m.access_level_modifier }} static func ==(lhs:{{ m.class_name }},rhs:{{ m.class_name }}) -> Bool{
         return lhs.{{m.identifier_field_name  }} == rhs.{{ m.identifier_field_name }}
+        }
     }
+
 
 {% endif %}
 
