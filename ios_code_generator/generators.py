@@ -67,7 +67,7 @@ def json_to_fields():
         fields = converters.convert_text_to_field_list(text)
         output = ';'.join([str(f) for f in fields])
         sys.stdout.writelines(comments)
-        sys.stdout.write(output)
+        sys.stdout.write("\n"+output)
     except Exception as e:
         import traceback
         sys.stdout.write(traceback.format_exc())
