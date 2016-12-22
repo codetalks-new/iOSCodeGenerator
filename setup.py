@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='ios_code_generator',
-    version='0.2.0',
+    version='1.0.0',
     author='Haizhen Lee',
     author_email='banxi1988@gmail.com',
     install_requires = ['jinja2'],
