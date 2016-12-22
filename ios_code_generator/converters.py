@@ -51,4 +51,5 @@ def convert_text_to_field_list(text):
     fields =  json_to_field_list(json_obj)
     for field in fields:
         field.index = text.find(field.name)
+    fields.sort(key=lambda f:f.index)
     return fields

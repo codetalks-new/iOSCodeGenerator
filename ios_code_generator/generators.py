@@ -60,11 +60,14 @@ generate = generate_v2
 
 def json_to_fields():
     from . import converters
-    input = sys.stdin.read()
-    if isinstance(input,str):
-        text = input.decode(encoding='utf-8')
-    else:
-        text = input
-    fields = converters.convert_text_to_field_list(text)
-    output = ';'.join([str(f) for f in fields])
-    sys.stdout.write(output)
+    try:
+        lines = utils.readlines_from_stdin()
+        comments = [str("\n/// ") + line.encode('utf-8') for line in lines]
+        text = ''.join(lines)
+        fields = converters.convert_text_to_field_list(text)
+        output = ';'.join([str(f) for f in fields])
+        sys.stdout.writelines(comments)
+        sys.stdout.write(output)
+    except Exception as e:
+        import traceback
+        sys.stdout.write(traceback.format_exc())
