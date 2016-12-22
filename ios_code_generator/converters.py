@@ -27,7 +27,13 @@ class JSONField(object):
         if isinstance(self.value,(str,unicode)) :
             if self.value.startswith('http'):return 'u'
             elif self.value.startswith('is'): return 'b'
-        elif self.name in ['created']: return 'di'
+        elif isinstance(self.value, (int,long)):
+            if self.value > 946656000: return 'di'
+            else:return 'i'
+        elif isinstance(self.value, float):
+            return 'd'
+        elif isinstance(self.value, bool):
+            return 'b'
         return ''
 
     def __str__(self):
