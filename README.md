@@ -38,6 +38,18 @@ Let Code generate Code
                 "bi_followers_count": 215
             }
 ```
+像这样的 API 返回 结果 , 我们在 应用中 创建一个 User 类,然后根据返回. 一个一个写上.
+如:
+
+```swift
+struct User{
+     let id:Int
+     let screenName: String
+    /// 省略
+}
+```
+写这样的代码就像是做苦力一样. 为此, 我写了一个代码生成脚本. 能够快速的
+从  API 生成模型代码.
 
 先来看一发动图, 感受下 从 API 到 Model 是多么的方便.
 [![Json2FieldsToModel](./Screenshots/json2fields_and_generate_model.gif)
@@ -45,7 +57,7 @@ Let Code generate Code
 **使用的是通过 Automator 创建系统服务的方式来调用脚本**
 
 首先执行 将  json 转成 fields ,通过 json_to_fields() 函数 .得到结果如下:
-
+上面是原来的  JSON 的. 以注释的形式保存. 下面是得到的字段列表.
 ```
 /// {
 /// "id": 1404376560,
@@ -78,6 +90,27 @@ Let Code generate Code
 /// }
 id:d;screen_name;name;province;city;location;description;url:u;profile_image_url:u;domain;gender;followers_count:i;friends_count:i;statuses_count:i;favourites_count:i;created_at;following:i;allow_all_act_msg:i;remark;geo_enabled:i;verified:i;allow_all_comment:i;avatar_large:u;verified_reason;follow_me:i;online_status:i;bi_followers_count:i
 ```
+
+### 通过字段列表的速写, 生成 Model 类型
+将字段列表稍微分一下行, 如下.
+```
+id:d;screen_name;name;province;city;location;description;url:u;profile_image_url:u
+domain;gender;followers_count:i;friends_count:i;statuses_count:i;favourites_count:i
+created_at;following:i;allow_all_act_msg:i;remark;geo_enabled:i;verified:i;allow_all_comment:i
+avatar_large:u;verified_reason;follow_me:i;online_status:i;bi_followers_count:i
+```
+
+字段简写的形式是 `filedName[:fieldType]` 各个字段声明以分号分隔开. `fieldType` 可以省略,省略则表示为 `String` 类型.
+其他的字段简写说明:
+- **`i`** : `Int`
+- **`b`** : `Bool`
+- **`d`** : `Double`
+- **`s`** : `String` 如果是 String 类型的话,建议不用写,因为这是默认类型.
+- **`u`** : `URL` 类型.
+- **`j`** : `JSON` 类型.
+
+其他更多类型支持,参见: 代码中 `ios_code_generator/maps.py:203` 的说明.
+
 
 然后通过 ,字段名称及类型简写列表生成  Model.
 这里假定 JSON 序列化库为 SwiftyJSON
