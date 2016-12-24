@@ -14,13 +14,12 @@ enum {{ model.class_name }} {% if model.raw_type %}:{{ model.raw_type }}{% endif
      {% else %}
      case {{ field.field_name }}
      {% endif %}
-
  {% endfor %}
+
 {% for field in fields %}
-    var is{{ field.camel_name }}:Bool{
-        return self == .{{ field.field_name }}
-    }
+    var is{{ field.camel_name }}:Bool{ return self == .{{ field.field_name }} }
 {% endfor %}
+
     var title:String{
         switch self{
         {% for field in fields %}
@@ -29,7 +28,7 @@ enum {{ model.class_name }} {% if model.raw_type %}:{{ model.raw_type }}{% endif
         }
     }
 
-    static let allCases:[{{ model.class_name }}] = [{{  fields|map(attribute='field_name')|join(',.') }}]
+    static let allCases:[{{ model.class_name }}] = [{% for field in fields %}.{{field.field_name}}{% if not loop.last  %},{% endif %} {% endfor %}]
 }
 
 {% if model.has_icon %}
