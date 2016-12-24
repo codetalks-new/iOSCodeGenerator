@@ -1,6 +1,20 @@
 # iOS Code Generator
 Let Code generate Code
 
+## 安装与使用说明
+
+ ### 安装
+ 目前暂时推荐使用开发者模式来安装.
+ 1. clone 本项目.
+ 2. 在目录下执行 `sudo python setup.py develop` 这样就可以在全局目录引用  ios_code_generator 包了.
+ 
+ ### 使用
+ 整个生成脚本命令的调用, 我建议通过 Automator Service 来调用.
+ 1. 你可以直接将我创建好的 Automator Service 从 `Utils/Services` 目录拷贝到你机器的
+ `~/Library/Services` 目录. 使用哪一个就拷贝哪一个,或者全部拷贝过去.
+ 
+ 2. 在 Xcode 右键 弹出菜单,选择  Service 就可以看到对应的服务了.
+
 
 ## 一: 从 API 到 Model
 这里的目的是自动将 API 的返回转成 Model.
