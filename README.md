@@ -246,6 +246,104 @@ return dict
 
 ```
 
+## Enum 好用, Enum 可以更易用
+Swift 3 中的枚举可以说是我,好用到让我惊讶的程度.
+但是我可以让它更易用.
+
+### 经典用例
+比如 用它来封装 应用 微信的 Tab 栏枚举,如下:
+
+```swift
+enum AppTab{
+    case wechat,contacts,discover,me
+}
+```
+到这里已经比用整型常量好很多了.
+好了,现在你想将 UITabBarItem 中的构造封装在里面.
+1. 首先我们为其添加一个 `title` 属性,如下:
+
+```swift
+extension AppTab{
+  var title:String{
+    switch self {
+    case .wechat: return "微信"
+    case .contacts: return "通讯录"
+    case .discover: return "发现"
+    case .me: return "我"
+    }
+  }
+}
+
+```
+
+然后.就可以直接使用 `.title` 就可以访问了. 避免了 使用字典保存映射的麻烦. 写法,修改也简单.
+
+2. 你想判断某一个 AppTab 值是不是 me.
+ 你选择这样做 ` if tab == .wechat` 嗯, Swift 中可以直接写 `.wechat` 这样的枚举值真方便.
+ 但是你也可以这样. 添加一个 Bool 类型的 Computed Property.
+ 
+```swift
+extension AppTab{
+  var isWechat:Bool{ return self == .wechat }
+}
+```
+
+然后你想为所有的枚举值都加上这样的 Computed Property. 你复制粘贴然后修改.
+
+
+3. 很多时候,你想遍历枚举值, 于是你添加了一个静态属性.保存所以的枚举值为一个数组.
+如下:
+
+```swift
+extension AppTab{
+  static let allCases:[ AppTab] = [.wechat, .contacts, .discover, .me]
+}
+```
+
+### 动起来
+
+so far, so good. 那我可以帮到你什么呢? 我可以帮你少写代码.
+怎么帮?
+
+1. 只需要写少量的几行声明:
+
+如下.
+```
+AppTab
+wechat:微信
+contacts: 通讯录
+discover:发现
+me:我
+```
+选中, 右键, 选择 "Services|generate_enum"
+然后如下代码就自动生成了:
+
+```swift
+//AppTab
+//wechat:微信
+//contacts: 通讯录
+//discover:发现
+//me:我
+enum AppTab  {
+     case wechat, contacts,discover,me
+    var isWechat:Bool{ return self == .wechat }
+    var isContacts:Bool{ return self == .contacts }
+    var isDiscover:Bool{ return self == .discover }
+    var isMe:Bool{  return self == .me }
+    var title:String{
+        switch self{
+        case .wechat:return "微信"
+        case .contacts:return " 通讯录"
+        case .discover:return "发现"
+        case .me:return "我"
+        }
+    }
+    static let allCases:[AppTab] = [.wechat,.contacts,.discover,.me]
+}
+```
+
+怎么样? 来试试吧!
+当然还有其他选项可以使用. 如果你有其他需要麻烦告诉我. 当然有 PR 最好了.
 
 ## 未完待续
 项目其他生成脚本的使用说明,稍后更新.
