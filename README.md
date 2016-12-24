@@ -345,5 +345,9 @@ enum AppTab  {
 怎么样? 来试试吧!
 当然还有其他选项可以使用. 如果你有其他需要麻烦告诉我. 当然有 PR 最好了.
 
+最后来张动图感受一下:
+
+![Generate Enum](Screenshots/generate_enum.gif)
+
 ## 未完待续
 项目其他生成脚本的使用说明,稍后更新.
