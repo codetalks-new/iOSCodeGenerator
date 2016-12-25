@@ -26,6 +26,7 @@ class EnumModel(Model):
     # 整型枚举的起始值
     start_value = model_property('start', default=0)
     has_icon = model_bool_property('icon')
+    is_simple = model_bool_property(['s','simple'])
 
     @property
     def raw_type(self):

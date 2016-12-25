@@ -2,8 +2,8 @@
 {{ comment }}
 {% endfor %}
 enum {{ model.class_name }} {% if model.raw_type %}:{{ model.raw_type }}{% endif %} {
- {%  for field in fields %}
-     {% if model.raw_type %}
+{% if model.raw_type %}
+    {%  for field in fields %}
         {% if model.mtype == 's' %}
         case {{ field.field_name }} =  "{{ field.name  }}"
         {% elif model.mtype == 'i' %}
@@ -11,14 +11,21 @@ enum {{ model.class_name }} {% if model.raw_type %}:{{ model.raw_type }}{% endif
         {% else %}
         case {{ field.field_name }}
         {% endif %}
-     {% else %}
-     case {{ field.field_name }}
-     {% endif %}
  {% endfor %}
-
+{% else %}
+    {% if model.is_simple %}
+        case {{ fields|map(attribute='field_name')|join(', ') }}
+    {% else %}
+        {% for field in fields %}
+            case {{ field.field_name }}
+        {% endfor %}
+    {% endif %}
+{% endif %}
+{% if not model.is_simple %}
 {% for field in fields %}
     var is{{ field.camel_name }}:Bool{ return self == .{{ field.field_name }} }
 {% endfor %}
+{% endif %}
 
     var title:String{
         switch self{
