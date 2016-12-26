@@ -84,13 +84,19 @@ class Model(ModelParserMixin, object):
     template = None
     prefix = model_property("prefix", default="")
     model_name = model_property('m', default='T')
+    FRAGMENT_NAME = '_FRAGMENT_'
 
-    def __init__(self, name, mtype, config_items, fields=None):
+    def __init__(self, name, mtype='', config_items=None, fields=None):
+        config_items = config_items or []
         self.name = name
         self.mtype = mtype
         self.model_config = dict((item.ctype, item.value) for item in config_items)
         self.fields = fields
         self.target_config = dict()
+
+    @property
+    def is_fragment(self):
+        return self.name == '_FRAGMENT_'
 
     def __str__(self):
         return u"%s:%s" % (self.name, self.mtype)

@@ -182,16 +182,16 @@ class RouterModel(Model):
 
     @classmethod
     def parse_source(cls, lines):
-        model = None
         if lines[0].startswith('-'):
             model = cls.parse_model_line(lines[0])
             lines = lines[1:]
+        else:
+            model = cls(name=cls.FRAGMENT_NAME)
         routers = []
         for line in lines:
             router = cls.parse_route(line, model)
             routers.append(router)
-        if model:
-            model.fields = routers
+        model.fields = routers
         return model, routers
 
     @property

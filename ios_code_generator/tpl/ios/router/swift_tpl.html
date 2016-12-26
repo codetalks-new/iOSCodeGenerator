@@ -18,7 +18,7 @@
     {% endif %}
 {% endmacro %}
 
-{% if model %}
+{% if not model.is_fragment %}
 enum {{model.name}}:URLRequestConvertible{
 {%  for router in routers %}
     {{ router.case_stmt }}

@@ -46,37 +46,27 @@ class SettingsField(Field):
             return t+"?"
 
     @property
-    def settings_setter_type(self):
-        map = {
-            'i':'Integer',
-            'b':'Bool',
-            'f':'Double',
-            'u':'URL'
-        }
-        return map.get(self.ftype,'Object')
-
-    @property
     def settings_getter_type(self):
         map = {
             'i':'integer',
             'b':'bool',
             'f':'double',
             'u':'URL',
-            's':'string'
+            's':'string',
+            'd': 'object'
         }
-        return map.get(self.ftype,'object')
+        return map.get(self.ftype,'string')
 
     @property
     def settings_set_stmt(self):
-        type = self.settings_setter_type
         key = 'Keys.%s' % self.settings_name
-        return 'userDefaults.set%s(newValue,forKey:%s)' % (type,key)
+        return 'userDefaults.set(newValue,forKey:%s)' % (key)
 
     @property
     def settings_get_stmt(self):
         type = self.settings_getter_type
         key = 'Keys.%s' % self.settings_name
-        stmt = 'return userDefaults.%sForKey(%s)' % (type,key)
+        stmt = 'return userDefaults.%s(forKey: %s)' % (type,key)
         if self.ftype == 'd':
             stmt += " as? Date"
         return stmt
@@ -85,7 +75,6 @@ class SettingsField(Field):
 @as_ios_swift_generator("settings")
 class SettingsModel(Model):
     field_class = SettingsField
-
 
     @property
     def settings_prefix(self):
@@ -97,3 +86,13 @@ class SettingsModel(Model):
         if value in ['1', 't', 'true', 'on']:
             return True
         return False
+
+    @classmethod
+    def parse_source(cls, lines):
+        if lines[0].startswith('-'):
+            model = cls.parse_model_line(lines[0])
+            lines = lines[1:]
+        else:
+            model = cls(name=cls.FRAGMENT_NAME)
+        model.fields = cls.parse_field_lines(lines)
+        return model, model.fields

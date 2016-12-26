@@ -2,14 +2,19 @@
     {{ comment }}
 {% endfor %}
 
+{% if not model.is_fragment %}
 struct {{ model.class_name }} {
 struct Keys{
+{% endif %}
 {% for field in fields %}
     static let {{ field.settings_name }} = "{{ field.settings_key }}"
 {% endfor %}
+{% if not model.is_fragment %}
 }
+    static let  userDefaults = UserDefaults.standard
+{% endif %}
 
-static let  userDefaults = NSUserDefaults.standardUserDefaults()
+
 {% for field in fields %}
     static var {{ field.name }}:{{ field.settings_type_annotation }}{
     set{
@@ -23,13 +28,22 @@ static let  userDefaults = NSUserDefaults.standardUserDefaults()
     }
 {% endfor %}
 
+{% if not model.is_fragment %}
 static func registerDefaults(){
-let defaults = [
+let defaults : [String:Any] = [
 {% for field in fields %}
+    {% if field.settings_default_value != 'nil' %}
     Keys.{{ field.settings_name }}:{{ field.settings_default_value }},
+    {% endif %}
 {% endfor %}
 ]
-userDefaults.registerDefaults(defaults)
+userDefaults.register(defaults: defaults)
 }
 
 }
+{% else %}
+{% for field in fields %}
+    Keys.{{ field.settings_name }}:{{ field.settings_default_value }},
+{% endfor %}
+{% endif %}
+
