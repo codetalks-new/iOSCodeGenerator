@@ -94,5 +94,8 @@ class SettingsModel(Model):
             lines = lines[1:]
         else:
             model = cls(name=cls.FRAGMENT_NAME)
-        model.fields = cls.parse_field_lines(lines)
-        return model, model.fields
+        fields = cls.parse_field_lines(lines)
+        for field in fields:
+            field.model = model
+        model.fields = fields
+        return model, fields
