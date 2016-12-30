@@ -351,5 +351,8 @@ enum AppTab  {
 
 ![Generate Enum](Screenshots/generate_enum.gif)
 
+## 生成偏好设置访问存取代码
+![Generate Settings](Screenshots/generate_settings.gif)
+
 ## 未完待续
 项目其他生成脚本的使用说明,稍后更新.
