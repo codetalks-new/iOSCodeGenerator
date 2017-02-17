@@ -49,6 +49,13 @@ class DataField(Field):
         return self.ftype == 'r' or self.ftype == '[r'
 
     @property
+    def field_name(self):
+        field_config = self.attrs.get('field')
+        if field_config:
+            return field_config.config_value
+        return super(DataField, self).field_name
+
+    @property
     def declare_stmt(self):
         stmt =  'let {field_name} : {field_type}'.format(field_name=self.field_name, field_type=self.field_type)
         return stmt

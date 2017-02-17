@@ -14,7 +14,7 @@ def test_data_model():
     print(text)
 
 def test_refModel():
-    strio = StringIO(u"-ShopCard\nshopCardBase:r;shopCardLog:[r\n")
+    strio = StringIO(u"-ShopCard\nshopCardBase:r;shopCardLog(field=logs):[r\n")
     sys.stdin = strio
     text = generate("model")
     print(text)
