@@ -41,7 +41,18 @@ return dict
 {% endif %}
 
 {% if m.impl_tos %}
-    extension {{ m.class_name }} : CustomStringConvertible{
-    {{ m.access_level_modifier }}  var description:String {  return {{ m.guess_tos_field_name() }} }
+extension {{ m.class_name }} : CustomStringConvertible{
+{{ m.access_level_modifier }}  var description:String {
+        var builder = "{{ m.class_name }}["
+        {% for field in fields %}
+            {% if loop.last %}
+                builder.append("{{ field.name }}=\({{ field.name }})")
+            {% else %}
+                builder.append("{{ field.name }}=\({{ field.name }}),")
+            {% endif %}
+        {%  endfor %}
+        builder.append("]")
+        return builder
     }
+}
 {% endif %}

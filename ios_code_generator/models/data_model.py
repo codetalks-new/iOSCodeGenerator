@@ -119,7 +119,7 @@ class DataModel(Model):
     field_class = DataField
     impl_eq = model_bool_property('eq')
     impl_hash = model_bool_property('hash')
-    impl_tos = model_bool_property('tos')
+    impl_tos = True # better to be default model_bool_property(['tos, ts'])
     is_class = model_bool_property(['c','class'])
 
     is_public = model_bool_property(['public'])
