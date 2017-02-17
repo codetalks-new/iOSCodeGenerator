@@ -12,6 +12,9 @@ __author__ = 'banxi'
 class DataField(Field):
     @cached_property
     def type_class(self):
+        field_config = self.attrs.get('type')
+        if field_config and field_config.config_value:
+            return to_camel_case(field_config.config_value)
         if self.is_ref:
             return to_camel_case(self.name)
         else:
@@ -51,8 +54,8 @@ class DataField(Field):
     @property
     def field_name(self):
         field_config = self.attrs.get('field')
-        if field_config:
-            return field_config.config_value
+        if field_config and field_config.config_value:
+            return to_mixed_case(field_config.config_value)
         return super(DataField, self).field_name
 
     @property

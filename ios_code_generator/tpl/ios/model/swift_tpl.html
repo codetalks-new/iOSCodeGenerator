@@ -46,9 +46,9 @@ extension {{ m.class_name }} : CustomStringConvertible{
         var builder = "{{ m.class_name }}["
         {% for field in fields %}
             {% if loop.last %}
-                builder.append("{{ field.name }}=\({{ field.name }})")
+                builder.append("{{ field.field_name }}=\({{ field.field_name }})")
             {% else %}
-                builder.append("{{ field.name }}=\({{ field.name }}),")
+                builder.append("{{ field.field_name }}=\({{ field.field_name }}),")
             {% endif %}
         {%  endfor %}
         builder.append("]")
