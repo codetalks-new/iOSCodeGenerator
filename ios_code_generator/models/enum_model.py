@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from ios_code_generator.generators import as_ios_swift_generator
+from ios_code_generator.generators import as_ios_swift_generator, as_android_kotlin_generator
 from .core import Model, model_property, model_bool_property
 from ios_code_generator.models import Field
 
@@ -39,3 +39,6 @@ class EnumModel(Model):
     @property
     def class_name(self):
         return self.camel_name
+
+@as_android_kotlin_generator("enum")
+class KotlinEnumModel(EnumModel):pass

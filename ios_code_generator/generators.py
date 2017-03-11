@@ -27,6 +27,7 @@ def as_generator(target, platform="ios", lang="swift"):
     return decorator
 
 as_ios_swift_generator = functools.partial(as_generator, platform="ios", lang="swift")
+as_android_kotlin_generator = functools.partial(as_generator, platform="android", lang="kotlin")
 
 def find_generator(target, platform="ios", lang="swift"):
     gkey = _make_gkey(target=target, platform=platform, lang=lang)
@@ -57,6 +58,8 @@ def generate_v2(target, **options):
         return traceback.format_exc()
 
 generate = generate_v2
+
+generate_kotlin = functools.partial(generate_v2, platform='android', lang='kotlin')
 
 def json_to_fields():
     from . import converters

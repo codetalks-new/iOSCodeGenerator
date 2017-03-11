@@ -1,0 +1,39 @@
+{% for comment in comments %}
+{{ comment }}
+{% endfor %}
+enum class {{ model.class_name }} {% if model.raw_type %}(val rawValue:{{model.raw_type }}){% endif %}{
+{% if model.raw_type %}
+    {%  for field in fields %}
+        {% if model.mtype == 's' %}
+        {{ field.field_name }}("{{ field.name  }}"){% if loop.last %}; {% else %}, {% endif %}
+        {% elif model.mtype == 'i' %}
+        {{ field.field_name }}({{model.start_value + loop.index0}}){% if loop.last %}; {% else %}, {% endif %}
+        {% else %}
+        {{ field.field_name }} {% if loop.last %}; {% else %}, {% endif %}
+        {% endif %}
+    {% endfor %}
+
+{% else %}
+    {% if model.is_simple %}
+        {{ fields|map(attribute='field_name')|join(', ') }}
+    {% else %}
+        {% for field in fields %}
+            {{ field.field_name }}
+        {% endfor %}
+    {% endif %}
+    ;
+{% endif %}
+
+{% if not model.is_simple %}
+{% for field in fields %}
+    val is{{ field.camel_name }} get() =  this == {{ model.class_name }}.{{field.field_name }}
+{% endfor %}
+{% endif %}
+
+    val title:String get() = when(this){
+        {% for field in fields %}
+        {{field.field_name}} -> "{{field.enum_title}}"
+        {% endfor %}
+    }
+}
+

@@ -46,7 +46,7 @@ class {{sname}}{
 
     func query(queryType:QueryType) -> [{{m.class_name}}]{
         var list = [{{m.class_name}}]()
-        for row in try! db.prepare(queryType.order(Columns.id.desc)) {
+        for row in try! db.prepare(queryType.order(Columns.rowid.desc)) {
             let obj = {{m.class_name}}(row:row)
             list.append(obj)
         }
@@ -61,7 +61,8 @@ class {{sname}}{
         do{
             let stmt = {{t_var}}.insert(or: .replace,
             {% for field in fields %}
-            Columns.{{field.field_name}} <- obj.{{field.field_name}} {% if not loop.last %}, {% endif %}
+                Columns.{{field.field_name}} <- obj.{{field.field_name}} {% if not loop.last %}, {% endif %}
+
             {% endfor %}
             )
             let rowId = try db.run(stmt)
@@ -76,7 +77,8 @@ class {{sname}}{
         do{
             let stmt = {{t_var}}.filter(Columns.rowid == obj.rowid).update(
             {% for field in fields %}
-            Columns.{{field.field_name}} <- obj.{{field.field_name}}{% if not loop.last %}, {% endif %}
+                Columns.{{field.field_name}} <- obj.{{field.field_name}}{% if not loop.last %}, {% endif %}
+
             {% endfor %}
             )
             let count = try db.run(stmt)
