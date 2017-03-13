@@ -78,7 +78,7 @@ class DataField(Field):
                 if type_char == 'r':
                     tpl += '$type_class.arrayFrom(json["$name"])'
                 elif type_char == 'u':
-                    tpl += 'json["$name"].flatMap{ $$1.stringValue.quietUrl } '
+                    tpl += 'json["$name"].flatMap{ $$1.URL } '
                 else:
                     tpl += 'json["$name"].arrayObject as? [$type_class] ?? []'
             else:
@@ -92,7 +92,7 @@ class DataField(Field):
             if self.ftype == 'r':
                 tpl += '$type_class(json:json["$name"])'
             elif self.ftype == 'u':
-                tpl += ' json["$name"].stringValue.quietUrl'
+                tpl += ' json["$name"].URL'
             elif self.ftype == 'j':
                 tpl += ' json["$name"]'
             else:
@@ -117,7 +117,7 @@ class DataField(Field):
             if self.ftype == 'r':
                 tpl += ".toDict()"
             elif self.ftype == 'u':
-                tpl += ".absoluteString"
+                tpl += "?.absoluteString"
             elif self.ftype == 'j':
                 tpl += ".object"
 

@@ -13,7 +13,7 @@ import BXForm
     {{ comment }}
 {% endfor %}
 
-class {{ model.class_name }} : {{ model.superclass }} {% if model.has_adapter %}, ListViewController {% endif %} {
+final class {{ model.class_name }} : {{ model.superclass }} {% if model.has_adapter %}, ListViewController {% endif %} {
 
 {% for field in fields %}
     {{ field.declare_stmt }}
@@ -45,6 +45,15 @@ override func loadView(){
     {% if not model.no_init %}
     commonInit()
     {% endif %}
+
+    {%  if model.is_tvc %}
+        tableView.keyboardDismissMode = .onDrag
+        tableView.tableFooterView = UIView()
+        tableView.rowHeight = 60 // UITableViewAutomaticDimension
+        tableView.estimatedRowHeight = 60
+        tableView.separatorStyle = .singleLine
+        tableView.separatorColor = .seperatorLine
+    {%  endif %}
 }
 
 {%  if model.has_adapter %}
@@ -93,12 +102,7 @@ navigationItem.title = title
 
 {% if model.is_tvc %}
     clearsSelectionOnViewWillAppear = true
-    tableView.keyboardDismissMode = .onDrag
-    tableView.tableFooterView = UIView()
-    tableView.rowHeight = 60 // UITableViewAutomaticDimension
-    tableView.estimatedRowHeight = 60
-    tableView.separatorStyle = .singleLine
-    tableView.separatorColor = .seperatorLine
+
 
     {% if model.has_search_ui %}
         tableView.tableHeaderView = searchBar

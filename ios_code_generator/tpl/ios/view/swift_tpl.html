@@ -13,7 +13,7 @@ import BXModel
 
 {% set m = model %}
 {% set mname = model.ui_model_name %}
-class {{ model.class_name }} : {{ model.superclass }} {{ '' if model.ui_no_bind else ' ,BXBindable' }} {
+final class {{ model.class_name }} : {{ model.superclass }} {{ '' if model.ui_no_bind else ' ,BXBindable' }} {
 {% for field in fields %}
     {{ field.declare_stmt }}
 {% endfor %}
