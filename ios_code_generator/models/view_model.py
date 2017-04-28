@@ -149,6 +149,7 @@ class ViewField(Field):
 
 @as_ios_swift_generator("view")
 class ViewModel(Model):
+    default_field_type = 'l'
     field_class = ViewField
     is_autolayout = model_bool_property(['al', 'autolayout'])
     has_adapter = model_bool_property('adapter')

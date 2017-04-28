@@ -126,6 +126,7 @@ class DataField(Field):
 
 @as_ios_swift_generator("model")
 class DataModel(Model):
+    default_field_type = 's'
     field_class = DataField
     impl_eq = model_bool_property('eq')
     impl_hash = model_bool_property('hash')

@@ -43,6 +43,7 @@ int_value_pattern = re.compile(r'(?P<value>\d+)')
 
 
 class FieldParserMixin(object):
+    default_field_type = 'l'
     @classmethod
     def parse_field_config_item(cls, config):
         c = config.strip()
@@ -64,7 +65,7 @@ class FieldParserMixin(object):
         field_config = parts[0]
         field_config = field_config.replace('"', '')
 
-        ftype = parts[1] if len(parts) > 1 else 'l'
+        ftype = parts[1] if len(parts) > 1 else cls.default_field_type
 
         matcher = field_pattern.match(field_config)
         groupdict = matcher.groupdict()
