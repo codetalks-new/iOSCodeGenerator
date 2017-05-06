@@ -123,7 +123,7 @@ navigationItem.title = title
 {% endif %}
 {% if model.has_page %}
     bx_loadMoreControl = loadMoreControl
-    loadMoreControl.onLoadingHandler = {
+    loadMoreControl?.onLoadingHandler = {
         self.loadMoreData()
     }
 {% endif %}
@@ -151,7 +151,7 @@ navigationItem.title = title
 {% endif %}
 
 {% if model.has_page %}
-    var loadMoreControl = BXLoadMoreControl()
+    var loadMoreControl:BXLoadMoreControl? = BXLoadMoreControl()
 {% endif %}
 
 {% if model.has_search %}
