@@ -66,7 +66,20 @@ def json_to_fields():
     try:
         lines = utils.readlines_from_stdin()
         comments = [str("\n/// ") + line.encode('utf-8') for line in lines]
-        text = ''.join(lines)
+        # remove '//' comment in lines
+        final_lines = []
+        for line in lines:
+            if not line:
+                continue
+            comment_index = line.rfind('//')
+            if comment_index == 0:
+                continue # comment line
+            elif comment_index > 0:
+                new_line = line[:comment_index]
+                final_lines.append(new_line)
+            else:
+                final_lines.append(line)
+        text = ''.join(final_lines)
         fields = converters.convert_text_to_field_list(text)
         output = ';'.join([str(f) for f in fields])
         sys.stdout.writelines(comments)

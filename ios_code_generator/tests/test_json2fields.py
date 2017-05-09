@@ -9,7 +9,8 @@ __author__ = 'banxi'
 
 def test_json2fields():
     strio = StringIO(u"""
-                "following": false,
+// this is a comment line
+                "following": false,// test
                 "allow_all_act_msg": false,
                 "remark": "",
                 "geo_enabled": true,
@@ -18,3 +19,4 @@ def test_json2fields():
     """)
     sys.stdin = strio
     json_to_fields()
+
