@@ -92,7 +92,7 @@ class DataField(Field):
             if self.ftype == 'r':
                 tpl += '$type_class(json:json["$name"])'
             elif self.ftype == 'u':
-                tpl += ' json["$name"].URL'
+                tpl += ' json["$name"].url'
             elif self.ftype == 'j':
                 tpl += ' json["$name"]'
             else:
