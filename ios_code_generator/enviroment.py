@@ -6,6 +6,8 @@ from ios_code_generator.maps import *
 __author__ = 'banxi'
 
 
+
+
 class Environment(object):
     def __init__(self,model,fields):
         self.model = model
@@ -18,6 +20,9 @@ class Environment(object):
 
     def field_by_name(self,name):
         return self.fields_map.get(name)
+
+    def generate_android_constraint_stmt(self, field, config):
+        pass
 
     def generate_constraint_stmt(self,field,config):
         func_name = ui_field_pa_map.get(config.ctype)
@@ -107,10 +112,12 @@ class ConstraintConfigItem(object):
     def is_relative_layout(self):
         return self.ctype in ui_field_pa_relative_layout_map
 
+    @property
     def anchor_name(self):
         if self.secondItem is not None:
             return self.secondItem
 
+    @property
     def has_anchor(self):
         return self.secondItem is not None
 

@@ -21,8 +21,8 @@ def test_refModel():
 
 def test_with_underscore():
     strio = StringIO(u"""
-MyDay(tos)
-id;udid;group_id:i;date:di;memo;color;status:i;countdown_enabled:b;cover;pics;extras:j
+PlayerInfo
+userid;nickname;avatar:u;buyin:i;income:i;permission:i
     """)
     sys.stdin = strio
     text = generate("model")

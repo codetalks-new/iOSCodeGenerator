@@ -94,7 +94,8 @@ ui_view_designed_init_map = {
     'b': 'UIButton(type:.system)',
     'c': ' UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())',
     'sb': 'UISearchBar()',
-    'gbb': 'GroupButtonBar(buttons:[])'
+    'gbb': 'GroupButtonBar(buttons:[])',
+    'il': 'IconLabel(iconPosition:  .left)'
 }
 ui_model_type_map = {
     'v': 'UIView',
@@ -230,22 +231,22 @@ m_char_type_map = {
     '[r': 'RefArray'
 }
 
-m_java_char_type_map = {
+m_kotlin_char_type_map = {
     's': 'String',
     'i': 'Int',
-    'f': 'Double',
+    'f': 'Float',
     'd': 'Double',
-    'b': 'Bool',
+    'b': 'Boolean',
     'u': 'Uri',
     'r': 'Ref',
     'j': 'JSONObject',
     'di': 'Date',
     'ds': 'Date',
-    '[s': 'ArrayList<String>',
-    '[u': 'ArrayList<Uri>',
-    '[i': 'ArrayList<Int>',
-    '[f': 'ArrayList<Double>',
-    '[d': 'ArrayList<Double>',
-    '[b': 'ArrayList<Boolean>',
+    '[s': 'Array<String>',
+    '[u': 'Array<Uri>',
+    '[i': 'Array<Int>',
+    '[f': 'Array<Double>',
+    '[d': 'Array<Double>',
+    '[b': 'Array<Boolean>',
     '[r': 'RefArray'
 }

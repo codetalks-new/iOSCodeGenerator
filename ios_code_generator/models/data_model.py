@@ -3,60 +3,16 @@ from __future__ import unicode_literals
 
 from ios_code_generator.generators import as_ios_swift_generator
 from ios_code_generator.maps import m_char_type_map
-from ios_code_generator.models import Model, Field
+from ios_code_generator.models import Model
 from ios_code_generator.models import model_bool_property
-from ios_code_generator.utils import cached_property, to_mixed_case, to_camel_case
+from ios_code_generator.models.base_data_model import BaseDataField
+from ios_code_generator.utils import cached_property
 
 __author__ = 'banxi'
 
-class DataField(Field):
-    @cached_property
-    def type_class(self):
-        field_config = self.attrs.get('type')
-        if field_config and field_config.config_value:
-            return to_camel_case(field_config.config_value)
-        if self.is_ref:
-            return to_camel_case(self.name)
-        else:
-            if self.is_array:
-                type_char = self.ftype[1]
-                return m_char_type_map.get(type_char, 'String')
-            else:
-                return m_char_type_map.get(self.ftype,'String')
 
-    @cached_property
-    def field_type(self):
-        if self.is_array:
-            return '[%s]' % self.type_class
-        else:
-            return self.type_class
-
-    @cached_property
-    def is_array(self):
-        return self.ftype[0] == '['
-
-    @cached_property
-    def is_date(self):
-        return self.ftype == 'di'
-
-    @cached_property
-    def is_simple(self):
-        return len(self.ftype) == 1
-
-    @cached_property
-    def is_complex(self):
-        return len(self.ftype) > 1
-
-    @cached_property
-    def is_ref(self):
-        return self.ftype == 'r' or self.ftype == '[r'
-
-    @property
-    def field_name(self):
-        field_config = self.attrs.get('field')
-        if field_config and field_config.config_value:
-            return to_mixed_case(field_config.config_value)
-        return super(DataField, self).field_name
+class DataField(BaseDataField):
+    field_type_map = m_char_type_map
 
     @property
     def declare_stmt(self):
