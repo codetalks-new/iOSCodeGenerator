@@ -35,7 +35,7 @@ enum {{ model.class_name }} {% if model.raw_type %}:{{ model.raw_type }}{% endif
         }
     }
 
-    static let allCases:[{{ model.class_name }}] = [{% for field in fields %}.{{field.field_name}}{% if not loop.last  %},{% endif %} {% endfor %}]
+    static let all:[{{ model.class_name }}] = [{% for field in fields %}.{{field.field_name}}{% if not loop.last  %},{% endif %} {% endfor %}]
 }
 
 {% if model.has_icon %}
