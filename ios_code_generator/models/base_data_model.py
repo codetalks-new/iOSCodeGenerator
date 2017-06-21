@@ -36,7 +36,7 @@ class BaseDataField(Field):
 
     @cached_property
     def is_date(self):
-        return self.ftype == 'di'
+        return self.ftype in ['di','ds']
 
     @cached_property
     def is_simple(self):

@@ -39,10 +39,13 @@ class DataField(BaseDataField):
                     tpl += 'json["$name"].arrayObject as? [$type_class] ?? []'
             else:
                 if self.is_date:
-                    tmp_value_stmt = 'let tmp_{name}_value = json["{name}"].{json_type}Value '\
-                        .format(name=self.name, json_type="double")
-                    tpl = tmp_value_stmt + "\n" + tpl
-                    tpl += 'Date(timeIntervalSince1970: tmp_${name}_value)'
+                    if  self.ftype == "di":
+                        tmp_value_stmt = 'let tmp_{name}_value = json["{name}"].{json_type}Value '\
+                            .format(name=self.name, json_type="double")
+                        tpl = tmp_value_stmt + "\n" + tpl
+                        tpl += 'Date(timeIntervalSince1970: tmp_${name}_value)'
+                    elif self.ftype == "ds":
+                        tpl += 'json["{name}"].stringValue.dateFromISO8601'.format(name=self.name)
 
         else:
             if self.ftype == 'r':
@@ -68,7 +71,11 @@ class DataField(BaseDataField):
                 tpl += ".map{ $0.toDict() }"
             else:
                 if self.is_date:
-                    tpl += ".timeIntervalSince1970"
+                    if self.ftype == "di":
+                        tpl += ".timeIntervalSince1970"
+                    elif self.ftype == "ds":
+                        tpl += '?.iso8601'
+
         else:
             if self.ftype == 'r':
                 tpl += ".toDict()"
