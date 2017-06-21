@@ -4,16 +4,14 @@ import BXModel
 import BXiOSUtils
 import Kingfisher
 import BXForm
+import BXLoadMoreControl
 {% set m = model %}
-{% if m.has_page %}
-    import BXLoadMoreControl
-{% endif %}
 
 {% for comment in comments %}
     {{ comment }}
 {% endfor %}
 
-final class {{ model.class_name }} : {{ model.superclass }} {% if model.has_adapter %}, ListViewController {% endif %} {
+final class {{ model.class_name }} : {{ model.superclass }} {% if model.has_adapter %}, ListViewControllerProtocol {% endif %} {
 
 {% for field in fields %}
     {{ field.declare_stmt }}
@@ -36,8 +34,8 @@ final class {{ model.class_name }} : {{ model.superclass }} {% if model.has_adap
 override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
 super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
 }
-{% include 'ios/view/uicommon_init.html' %}
 {% endif %}
+{% include 'ios/view/uicommon_init.html' %}
 
 override func loadView(){
     super.loadView()
