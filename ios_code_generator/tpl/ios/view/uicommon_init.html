@@ -1,6 +1,8 @@
+{% if not model.no_init %}
 required init?(coder aDecoder: NSCoder) {
 super.init(coder: aDecoder)
 }
+{% endif %}
 
 {% include 'ios/view/outlets_group.html' %}
 

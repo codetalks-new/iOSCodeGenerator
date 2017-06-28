@@ -67,7 +67,7 @@ def json_to_fields():
         lines = utils.readlines_from_stdin()
         comments = [str("\n/// ") + line.encode('utf-8') for line in lines]
         final_lines = json_remove_comment(lines)
-        text = ''.join(final_lines)
+        text = '\n'.join(final_lines)
         fields = converters.convert_text_to_field_list(text)
         output = ';'.join([str(f) for f in fields])
         sys.stdout.writelines(comments)
@@ -85,22 +85,31 @@ def json_remove_comment(lines):
         comment_index = line.rfind('//')
         if comment_index == 0:
             continue  # comment line
-        elif comment_index > 0:
+
+        comment_index = line.rfind('#')
+        if comment_index == 0:
+            continue  # comment line
+
+        if comment_index > 0:
             new_line = line[:comment_index]
             final_lines.append(new_line)
         else:
             final_lines.append(line)
     return final_lines
 
-def json_escape_quote():
-    lines = utils.readlines_from_stdin()
+def json_escape_quote(lines = None):
+    should_return = lines is not None
+    lines = lines or utils.readlines_from_stdin()
     in_lines = json_remove_comment(lines)
     final_lines = []
     for line in in_lines:
         if not line:continue
         new_line = line.replace('"','\\"')
         final_lines.append(new_line)
-    ouput_lines =([line.encode('utf-8') for line in final_lines])
-    ouput_lines.insert(0, '"')
-    ouput_lines.append('"')
-    sys.stdout.writelines(ouput_lines)
+    if should_return:
+        return  final_lines
+    else:
+        ouput_lines =([line.decode('utf-8') for line in final_lines])
+        ouput_lines.insert(0, '"')
+        ouput_lines.append('"')
+        sys.stdout.writelines(ouput_lines)

@@ -45,6 +45,7 @@ override func loadView(){
     {% endif %}
 
     {%  if model.is_tvc %}
+        clearsSelectionOnViewWillAppear = true
         tableView.keyboardDismissMode = .onDrag
         tableView.tableFooterView = UIView()
         tableView.rowHeight = 60 // UITableViewAutomaticDimension
@@ -56,7 +57,7 @@ override func loadView(){
 
 {%  if model.has_adapter %}
     typealias ModelType = {{ m.ui_model_name }}
-    let adapter = SimpleGenericTableViewAdapter<{{ m.ui_model_name }},{{ m.ui_cell_name }}>()
+    let adapter = SimpleTableViewAdapter<{{ m.ui_cell_name }}>()
     var modelAdapter: SimpleGenericDataSource<{{ m.ui_model_name }}>{
     return adapter
     }
@@ -83,9 +84,9 @@ title = ""
 navigationItem.title = title
 {% if model.has_adapter %}
     {% if  model.adapter_type == 'c' %}
-        adapter.bindTo(collectionView)
+        adapter.bind(to:collectionView)
     {% else %}
-        adapter.bindTo(tableView)
+        adapter.bind(to:tableView)
     {% endif %}
 {% endif %}
 
@@ -99,7 +100,6 @@ navigationItem.title = title
 {% endif %}
 
 {% if model.is_tvc %}
-    clearsSelectionOnViewWillAppear = true
 
 
     {% if model.has_search_ui %}
@@ -113,7 +113,7 @@ navigationItem.title = title
     }
 {% endif %}
 {% if model.has_req %}
-    loadData()
+    loadData(type:.loading)
 {% endif %}
 {% if model.has_refresh %}
     refreshControl = UIRefreshControl(frame: .zero)
@@ -150,6 +150,8 @@ navigationItem.title = title
 
 {% if model.has_page %}
     var loadMoreControl:BXLoadMoreControl? = BXLoadMoreControl()
+{% else %}
+    var loadMoreControl:BXLoadMoreControl? = nil
 {% endif %}
 
 {% if model.has_search %}
@@ -161,11 +163,8 @@ navigationItem.title = title
 {% endif %}
 {% if model.has_req %}
     // MARK: Load Data
-    func loadData(){
-        let params:Params = [:]
-        ApiService.listBy(params){ resp in
-        self.handle(resp: resp)
-        }
+    func loadData(type:LoadingType){
+
     }
 {% endif %}
 

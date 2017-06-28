@@ -12,6 +12,7 @@ ui_field_type_map = {
     't': 'UITableView',
     's': 'UIScrollView',
     'c': 'UICollectionView',
+    'stack':'UIStackView',
     'cr': 'UICollectionReusableView',
     'p': 'UIPickerView',
     'cb': 'CheckboxButton',
@@ -37,12 +38,15 @@ ui_field_type_map = {
     'ctb': 'ConfirmTitleBar',
     'tv': 'UITextView',
     'il': 'IconLabel',
+    'pl': 'Paddingabel',
     'ol': 'OvalLabel',
     'ci': 'OvalImageView',
     'wv': 'WKWebView',
     'uwv': 'UIWebView',
     'gbb': 'GroupButtonBar',
-    'oi': 'OutlineImageView'
+    'oi': 'OutlineImageView',
+    'udpl': 'UpDownPairLabel',
+    'lrpl': 'LeftRightPairLabel'
 }
 
 ui_field_custom_type_pure_name = {
@@ -54,6 +58,8 @@ ui_field_custom_type_pure_name = {
     "ol": "Label",
     "ci": "ImageView",
     "oi": "ImageView",
+    "udpl": "View",
+    "lrpl": "View",
 }
 
 ui_image_field_types = [
@@ -221,7 +227,7 @@ m_char_type_map = {
     'r': 'Ref',
     'j': 'JSON',
     'di': 'Date',
-    'ds': 'Date',
+    'ds': 'Date?',
     '[s': 'Array',
     '[u': 'Array',
     '[i': 'Array',

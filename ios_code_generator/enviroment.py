@@ -124,7 +124,7 @@ class ConstraintConfigItem(object):
     @property
     def value_param_value(self):
         if self.ctype == 'e':
-            return '{value}, left: {value}, bottom: {value}, right: {value}'.format( value=self.value)
+            return 'top: {value}, left: {value}, bottom: {value}, right: {value}'.format( value=self.value)
         else:
             return self.value
 
