@@ -9,23 +9,24 @@
     }
 
     var activeTextField:UITextField?
-    func textFieldDidBeginEditing(textField: UITextField) {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
         activeTextField = textField
     }
 
-    func textFieldDidEndEditing(textField: UITextField) {
+    func textFieldDidEndEditing(_ textField: UITextField) {
         activeTextField = nil
     }
 
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         let allTextFields = allUITextFieldOutlets
-        if let index = allTextFields.indexOf(textField){
-            if index.next() < allTextFields.count {
-                let nextTextField = allTextFields[index.next()]
+        if let index = allTextFields.index(of:textField){
+            if index.advanced(by: 1) < allTextFields.count {
+                let nextTextField = allTextFields[index.advanced(by: 1)]
                 nextTextField.becomeFirstResponder()
             }
         }
         return true
     }
+
 {% endif %}

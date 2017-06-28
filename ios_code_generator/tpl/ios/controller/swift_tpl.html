@@ -164,7 +164,7 @@ navigationItem.title = title
 {% if model.has_req %}
     // MARK: Load Data
     func loadData(type:LoadingType){
-
+        onLoading(type: type)
     }
 {% endif %}
 
