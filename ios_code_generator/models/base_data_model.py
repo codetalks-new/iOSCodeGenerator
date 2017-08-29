@@ -39,6 +39,10 @@ class BaseDataField(Field):
         return self.ftype in ['di','ds']
 
     @cached_property
+    def is_enum(self):
+        return self.ftype in ['ei', 'es']
+
+    @cached_property
     def is_simple(self):
         return len(self.ftype) == 1
 

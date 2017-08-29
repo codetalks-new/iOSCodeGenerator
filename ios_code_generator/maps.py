@@ -225,6 +225,8 @@ m_char_type_map = {
     'b': 'Bool',
     'u': 'URL?',
     'r': 'Ref',
+    'ei': 'StringEnum',
+    'es': 'IntEnum',
     'j': 'JSON',
     'di': 'Date',
     'ds': 'Date?',

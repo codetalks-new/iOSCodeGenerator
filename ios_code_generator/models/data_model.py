@@ -46,10 +46,16 @@ class DataField(BaseDataField):
                         tpl += 'Date(timeIntervalSince1970: tmp_${name}_value)'
                     elif self.ftype == "ds":
                         tpl += 'json["{name}"].stringValue.dateFromISO8601'.format(name=self.name)
+                elif self.is_enum:
+                    if self.ftype == "ei":
+                        tpl += '$type_class(rawValue:json["$name"].intValue)'
+                    elif self.ftype == "es":
+                        tpl += '$type_class(rawValue:json["$name"].stringValue)'
 
         else:
             if self.ftype == 'r':
                 tpl += '$type_class(json:json["$name"])'
+
             elif self.ftype == 'u':
                 tpl += ' json["$name"].url'
             elif self.ftype == 'j':
@@ -75,6 +81,8 @@ class DataField(BaseDataField):
                         tpl += ".timeIntervalSince1970"
                     elif self.ftype == "ds":
                         tpl += '?.iso8601'
+                elif self.is_enum:
+                    tpl += ".rawValue"
 
         else:
             if self.ftype == 'r':

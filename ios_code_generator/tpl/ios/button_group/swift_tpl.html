@@ -5,7 +5,7 @@
 // {{m.name}}Delegate
 protocol {{m.name}}Delegate:class{
     {% for button in fields %}
-        func {{m.mixed_name}}(cell:{{m.name}},{{button.name}} {{m.mixed_model_name}}:{{m.model_name}})
+        func {{m.mixed_name}}(_ cell:{{m.name}},{{button.name}} {{m.mixed_model_name}}:{{m.model_name}})
     {% endfor %}
 }
 
@@ -40,7 +40,7 @@ func on{{button.camel_name}}ButtonPressed(sender:UIButton){
 // MARK: Confirm {{m.name}}Delegate
 extension UIViewController: {{m.name}}Delegate{
 {% for button in fields %}
-    func {{m.camel_name}}(_ cell:{{m.name}},{{button.name}} {{m.mixed_model_name}}:{{m.model_name}}){
+    func {{m.mixed_name}}(_ cell:{{m.name}},{{button.name}} {{m.mixed_model_name}}:{{m.model_name}}){
 
     }
 

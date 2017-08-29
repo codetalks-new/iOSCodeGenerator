@@ -210,9 +210,9 @@ class ViewModel(Model):
             'vname': self.ui_cell_name
         }
         if base == 'c':
-            return 'let adapter = SimpleGenericCollectionViewAdapter<{mname},{vname}>()'.format(**ctx)
+            return 'let adapter = SimpleCollectionViewAdapter<{mname},{vname}>()'.format(**ctx)
         else:
-            return 'let adapter = SimpleGenericTableViewAdapter<{mname},{vname}>()'.format(**ctx)
+            return 'let adapter = SimpleTableViewAdapter<{mname},{vname}>()'.format(**ctx)
 
     @property
     def adapter_init(self):

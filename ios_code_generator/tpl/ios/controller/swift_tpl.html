@@ -5,6 +5,7 @@ import BXiOSUtils
 import Kingfisher
 import BXForm
 import BXLoadMoreControl
+import GameNetClient
 {% set m = model %}
 
 {% for comment in comments %}
@@ -57,14 +58,18 @@ override func loadView(){
 
 {%  if model.has_adapter %}
     typealias ModelType = {{ m.ui_model_name }}
-    let adapter = SimpleTableViewAdapter<{{ m.ui_cell_name }}>()
+    {% if model.adapter_type == 'c' %}
+        let adapter = SimpleCollectionViewAdapter<{{ m.ui_cell_name }}>()
+    {% else %}
+        let adapter = SimpleTableViewAdapter<{{ m.ui_cell_name }}>()
+    {% endif %}
     var modelAdapter: SimpleGenericDataSource<{{ m.ui_model_name }}>{
     return adapter
     }
 {%  endif %}
 
 {% if model.has_static_adapter %}
-    let staticAdapter = StaticTableViewAdapter()
+    let staticAdapter = SimpleStaticTableViewAdapter()
 {% endif %}
 
 {% if m.has_primary_action %}
@@ -165,6 +170,16 @@ navigationItem.title = title
     // MARK: Load Data
     func loadData(type:LoadingType){
         onLoading(type: type)
+        let info = PacketName(userId: Login.current.uid, clubId: clubId)
+        GameService.ReqName(info) { (reqResult) in
+            switch reqResult{
+            case .error(let error):
+                self.handleLoadError(error.userReadableDescription)
+            case .success(let ack):
+                let unions = {{ model.ui_model_name }}.arrayFrom(JSON.parse(ack.data))
+                self.handleLoadedItems(unions)
+            }
+        }
     }
 {% endif %}
 

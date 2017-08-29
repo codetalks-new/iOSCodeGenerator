@@ -1,0 +1,10 @@
+{% for comment in comments %}
+{{ comment }}
+{% endfor %}
+{% set m = model %}
+data class {{ m.class_name }}(
+{% for field in fields %}
+    val {{ field.field_name }}:{{ field.field_type }}{% if not loop.last %},{% endif %}
+
+{% endfor %}
+)

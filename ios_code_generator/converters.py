@@ -24,7 +24,7 @@ class JSONField(object):
 
     @property
     def guess_type(self):
-        if isinstance(self.value,(str,unicode)) :
+        if isinstance(self.value,(str,unicode)):
             if self.value.startswith('http'):return 'u'
             elif self.value.startswith('is'): return 'b'
         elif isinstance(self.value, bool):

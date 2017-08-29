@@ -85,8 +85,8 @@ def json_remove_comment(lines):
         comment_index = line.rfind('//')
         if comment_index == 0:
             continue  # comment line
-
-        comment_index = line.rfind('#')
+        if comment_index == -1:
+            comment_index = line.rfind('#')
         if comment_index == 0:
             continue  # comment line
 
