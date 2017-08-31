@@ -126,7 +126,7 @@ navigationItem.title = title
 {% endif %}
 {% if model.has_page %}
     bx_loadMoreControl = loadMoreControl
-    loadMoreControl?.onLoadingHandler = {
+    loadMoreControl?.onLoadingHandler = { [unowned self] in
         self.loadMoreData()
     }
 {% endif %}
