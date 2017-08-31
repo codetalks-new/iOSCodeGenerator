@@ -25,7 +25,7 @@ return [{{ fields|map(attribute='button_name')|join(',') }}]
 }
 {% endfor %}
 
-var delegate:{{m.name}}Delegate?
+weak var delegate:{{m.name}}Delegate?
 
 // MARK: Button Group Actions
 {% for button in fields %}
