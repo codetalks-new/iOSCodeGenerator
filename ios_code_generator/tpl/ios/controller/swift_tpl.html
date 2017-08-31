@@ -31,12 +31,8 @@ final class {{ model.class_name }} : {{ model.superclass }} {% if model.has_adap
     self.init(nibName: nil, bundle: nil)
     }
 {% endif %}
-// must needed for iOS 8
-override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
-}
+    {% include 'ios/view/uicommon_init.html' %}
 {% endif %}
-{% include 'ios/view/uicommon_init.html' %}
 
 override func loadView(){
     super.loadView()
@@ -67,6 +63,11 @@ override func loadView(){
     return adapter
     }
 {%  endif %}
+{% if model.has_page %}
+    var loadMoreControl:BXLoadMoreControl? = BXLoadMoreControl()
+{% else %}
+    var loadMoreControl:BXLoadMoreControl? = nil
+{% endif %}
 
 {% if model.has_static_adapter %}
     let staticAdapter = SimpleStaticTableViewAdapter()
@@ -153,11 +154,7 @@ navigationItem.title = title
     }
 {% endif %}
 
-{% if model.has_page %}
-    var loadMoreControl:BXLoadMoreControl? = BXLoadMoreControl()
-{% else %}
-    var loadMoreControl:BXLoadMoreControl? = nil
-{% endif %}
+
 
 {% if model.has_search %}
 {% endif %}
