@@ -61,12 +61,15 @@ generate = generate_v2
 
 generate_kotlin = functools.partial(generate_v2, platform='android', lang='kotlin')
 
-def json_to_fields():
+def json_to_fields(auto_remove_comments = False):
     from . import converters
     try:
         lines = utils.readlines_from_stdin()
         comments = [str("\n/// ") + line.encode('utf-8') for line in lines]
-        final_lines = json_remove_comment(lines)
+        if auto_remove_comments:
+            final_lines = json_remove_comment(lines)
+        else:
+            final_lines = lines
         text = '\n'.join(final_lines)
         fields = converters.convert_text_to_field_list(text)
         output = ';'.join([str(f) for f in fields])

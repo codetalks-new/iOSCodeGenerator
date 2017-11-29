@@ -22,6 +22,42 @@ def test_json2fields():
     sys.stdin = strio
     json_to_fields()
 
+def test_json2fields2():
+    strio = StringIO(u"""
+{
+    "id" : 409727,
+    "title" : "为什么 Linux 得 shell 不直接使用 JavaScript 的语法",
+    "url" : "http://www.v2ex.com/t/409727",
+    "content" : "另起炉灶有意思吗",
+    "content_rendered" : "x",
+    "replies" : 108,
+    "member" : {
+        "id" : 254032,
+        "username" : "86322989",
+        "tagline" : "",
+        "avatar_mini" : "//v2ex.assets.uxengine.net/avatar/838b/31da/254032_mini.png?m=1507543878",
+        "avatar_normal" : "//v2ex.assets.uxengine.net/avatar/838b/31da/254032_normal.png?m=1507543878",
+        "avatar_large" : "//v2ex.assets.uxengine.net/avatar/838b/31da/254032_large.png?m=1507543878"
+    },
+    "node" : {
+        "id" : 11,
+        "name" : "linux",
+        "title" : "Linux",
+        "title_alternative" : "Linux",
+        "url" : "http://www.v2ex.com/go/linux",
+        "topics" : 3729,
+        "avatar_mini" : "//v2ex.assets.uxengine.net/navatar/6512/bd43/11_mini.png?m=1511095631",
+        "avatar_normal" : "//v2ex.assets.uxengine.net/navatar/6512/bd43/11_normal.png?m=1511095631",
+        "avatar_large" : "//v2ex.assets.uxengine.net/navatar/6512/bd43/11_large.png?m=1511095631"
+    },
+    "created" : 1511704130,
+    "last_modified" : 1511771913,
+    "last_touched" : 1511773044
+}
+    """)
+    sys.stdin = strio
+    json_to_fields()
+
 def test_json_remove_comments():
     text = u"""
 
