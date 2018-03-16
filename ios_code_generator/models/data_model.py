@@ -97,28 +97,54 @@ class DataField(BaseDataField):
 
 @as_ios_swift_generator("model")
 class DataModel(Model):
-    default_field_type = 's'
+    default_field_type = 's' # 默认字段类型 `s` 表示字符串类型
     field_class = DataField
-    impl_eq = model_bool_property('eq')
-    impl_hash = model_bool_property('hash')
-    impl_tos = True # better to be default model_bool_property(['tos, ts'])
-    is_class = model_bool_property(['c','class'])
+    impl_eq = model_bool_property('eq', default=False) # 是否需要实现 equal 协议或方法
+    impl_hash = model_bool_property('hash', default=False) # 是否需要实现 hash 协议或方法
+    impl_tos = model_bool_property(['tos, ts'], default=False) # 是否需要生成 to
+    impl_encode = model_bool_property("encode", default=False) # 是否生成序列化方法
+    impl_decode = model_bool_property("decode", default=True) # 是否生成反序列化方法
+    impl_ctor = model_bool_property("ctor", default=False) # 是否生成一个默认的构造函数
+    is_class = model_bool_property(['c','class'], default=False)
 
-    is_public = model_bool_property(['public'])
-    is_open = model_bool_property(['open'])
+    is_public = model_bool_property(['public'], default=False)
+    is_open = model_bool_property(['open'], default=False)
 
 
     @cached_property
     def access_level_modifier(self):
         if self.is_open:
-            return "open "
+            return "open"
         if self.is_public:
-            return "public "
+            return "public"
         return ""
+
+    @property
+    def type_header(self):
+        parts = [
+            self.access_level_modifier,
+            'class' if self.is_class else 'struct',
+            self.class_name,
+        ]
+        if self.impl_decode and self.impl_encode:
+            parts.append(":")
+            parts.append("BXModel")
+        elif self.impl_encode:
+            parts.append(":")
+            parts.append("JSONSerializable")
+        elif self.impl_decode:
+            parts.append(":")
+            parts.append("JSONDeserializable")
+        return  ' '.join(parts)
+
+
 
 
     @cached_property
     def identifier_field_name(self):
+        """
+        :return: 生成 equal 方法时默认是只根据查找其中可能存在的 id 字段来生成。
+        """
         for name in ['_id', 'id', 'code']:
             if name in self.field_names:
                 return name
@@ -135,6 +161,9 @@ class DataModel(Model):
         return False
 
     def guess_tos_field_name(self):
+        """
+        :return: 猜测用来生成 toString 方法的字段。
+        """
         for name in ['name', 'title', 'desc']:
             if name in self.field_names:
                 return name

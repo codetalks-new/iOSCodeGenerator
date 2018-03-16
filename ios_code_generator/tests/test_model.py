@@ -8,7 +8,7 @@ from ios_code_generator.generators import generate
 __author__ = 'banxi'
 
 def test_data_model():
-    strio = StringIO(u"-User(tos,hash,eq)\nid:i;url:[u;title;author:r;follows(type=Follow):[r;counts:[i;created:di;realname\n")
+    strio = StringIO(u"-User(tos,hash,eq,ctor)\nid:i;url:[u;title;author:r;follows(type=Follow):[r;counts:[i;created:di;realname\n")
     sys.stdin = strio
     text = generate("model")
     print(text)

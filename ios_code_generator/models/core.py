@@ -9,6 +9,13 @@ from ios_code_generator._internal import _DictAccessorProperty
 from ios_code_generator.parser import ModelParserMixin
 from ios_code_generator.utils import cached_property, to_camel_case, to_mixed_case
 
+"""
+速写代码
+主要通过 Model-Field 来构造生成代码。
+Model 控制代码的主要结构， Field 控制一些具体项的生成细节。
+最开始主要是为了通过生成 MVC 中的数据模型代码。
+
+"""
 __author__ = 'banxi'
 
 @implements_to_string
@@ -31,9 +38,12 @@ class Field(object):
     def __str__(self):
         return u"%s:%s" % (self.name, self.ftype)
 
-    @property
+    @cached_property
     def field_name(self):
-        return to_mixed_case(self.name)
+        name = self.name
+        if self.name.endswith('?'):
+            name = self.name[:-1]
+        return to_mixed_case(name)
 
     @cached_property
     def camel_name(self):
@@ -51,21 +61,41 @@ class Field(object):
 
 
 class model_property(_DictAccessorProperty):  # noqa
+    """
+    用于 Model 类的属性 Descriptor,依赖 `model_config` 字段。
+    用于读取属性值和提供默认值。
+    """
     def lookup(self, obj):
         return obj.model_config
 
 
+
 class model_bool_property(object):
-    def __init__(self, name_or_names):
+    """
+    用于 Model 类的属性 Descriptor,依赖 `model_config` 字段。
+    直接通过提供开关名作为指令标志。如 `eq` 表示 开关值为真， `eq=false` 表示开关值为假
+    """
+
+    def __init__(self, name_or_names, default = False):
+        """
+        :param name_or_names: 单个名称或名称列表，列表主要是为了支持缩写
+        :param default: 开关默认值 False
+        """
         self.name_or_names = name_or_names
+        self.default = default
 
     def __get__(self, obj, type=None):
         if obj is None:
             return self
+        config_value = self.default
         if isinstance(self.name_or_names, (list, tuple)):
-            return any([name in obj.model_config for name in self.name_or_names])
+            for name in self.name_or_names:
+                if name in obj.model_config:
+                    config_value = obj.model_config[name] != 'false'
         else:
-            return self.name_or_names in obj.model_config
+            if self.name_or_names in obj.model_config:
+                config_value = obj.model_config[self.name_or_names] != 'false'
+        return  config_value
 
 
 class target_property(_DictAccessorProperty):  # noqa
@@ -80,10 +110,10 @@ class Model(ModelParserMixin, object):
     target = None # 输出目标 如 data_model, ui_model enum 等
     platform = "ios" # 输出目标平台
     lang = "swift" # 输出目标语言
-    field_class = Field
-    template = None
-    prefix = model_property("prefix", default="")
-    model_name = model_property('m', default='T')
+    field_class = Field # 对应的字段类
+    template = None # 默认模板路径
+    prefix = model_property("prefix", default="") # 前缀
+    model_name = model_property('m', default='T') # 模型名，
     FRAGMENT_NAME = '_FRAGMENT_'
 
     def __init__(self, name, mtype='', config_items=None, fields=None):
@@ -126,12 +156,21 @@ class Model(ModelParserMixin, object):
 
     @classmethod
     def template_path(cls):
+        """
+        要生成的代码模板的路径,如果 `template` 字段不为空，则返回 `template`
+        否则按规则拼接对应的路径。
+        :return:  模板路径
+        """
         if cls.template:
             return cls.template
         else:
             return "%s/%s/%s_tpl.html" % (cls.platform, cls.target, cls.lang)
 
     def template_context(self):
+        """
+        默认的上下文包括,`model`, 和 `fields`
+        :return: 模板渲染的上下文
+        """
         return dict(
             model = self,
             fields = self.fields,

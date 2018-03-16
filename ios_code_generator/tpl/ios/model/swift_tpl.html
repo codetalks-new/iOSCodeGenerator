@@ -4,10 +4,16 @@ import BXModel
     {{ comment }}
 {% endfor %}
 {% set m = model %}
-{{ m.access_level_modifier }}  struct {{ m.class_name }} :BXModel{
+{{ m.type_header }}{
 {% for field in fields %}
   {{ m.access_level_modifier }}  {{ field.declare_stmt }}
 {% endfor %}
+
+{{ m.access_level_modifier }}  init({% for field in fields %}{{field.field_name}}:{{field.field_type}}{% if not loop.last %},{%- endif %}{% endfor %}){
+{% for field in fields %}
+    self.{{field.field_name}} = {{field.field_name}}
+{% endfor %}
+}
 
 {{ m.access_level_modifier }}  init(json:JSON){
 {% for field in fields %}
@@ -15,6 +21,7 @@ import BXModel
 {% endfor %}
 }
 
+{% if m.impl_encode %}
 {{ m.access_level_modifier }}  func toDict() -> [String:Any]{
 var dict : [String:Any] = [ : ]
 {% for field in fields %}
@@ -22,6 +29,7 @@ var dict : [String:Any] = [ : ]
 {% endfor %}
 return dict
 }
+{% endif %}
 }
 
 {% if m.impl_eq %}
