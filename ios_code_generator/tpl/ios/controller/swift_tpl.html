@@ -31,13 +31,16 @@ final class {{ model.class_name }} : {{ model.superclass }} {% if model.has_adap
     self.init(nibName: nil, bundle: nil)
     }
 {% endif %}
-    {% include 'ios/view/uicommon_init.html' %}
+{% endif %}
+
+{% if model.init_views %}
+{% include 'ios/view/uicommon_init.html' %}
 {% endif %}
 
 override func loadView(){
     super.loadView()
     self.view.backgroundColor = .background
-    {% if not model.no_init %}
+    {% if model.init_views %}
     commonInit()
     {% endif %}
 
@@ -63,11 +66,7 @@ override func loadView(){
     return adapter
     }
 {%  endif %}
-{% if model.has_page %}
-    var loadMoreControl:BXLoadMoreControl? = BXLoadMoreControl()
-{% else %}
-    var loadMoreControl:BXLoadMoreControl? = nil
-{% endif %}
+
 
 {% if model.has_static_adapter %}
     let staticAdapter = SimpleStaticTableViewAdapter()
@@ -85,9 +84,9 @@ override func loadView(){
 {% endif %}
 
 override func viewDidLoad() {
-super.viewDidLoad()
-title = ""
-navigationItem.title = title
+    super.viewDidLoad()
+    title = ""
+    navigationItem.title = title
 {% if model.has_adapter %}
     {% if  model.adapter_type == 'c' %}
         adapter.bind(to:collectionView)
@@ -99,46 +98,49 @@ navigationItem.title = title
 {% if model.has_static_adapter %}
     // staticAdapter.append()
     // staticAdapter.appendItems([])
-    staticAdapter.bindTo(tableView)
-    staticAdapter.didSelectCell = { cell, index in
-    self.onTap(cell: cell)
+    staticAdapter.bind(to: tableView)
+    staticAdapter.didSelectCell = { [weak self] cell, index in
+        self?.onTap(cell: cell)
     }
 {% endif %}
 
 {% if model.is_tvc %}
-
-
     {% if model.has_search_ui %}
         tableView.tableHeaderView = searchBar
     {% endif %}
 {% endif %}
-{% if model.has_detail %}
-    adapter.didSelectedItem = {
-    item,index in
-    self.show{{ model.ui_model_name }}Detail(item)
-    }
-{% endif %}
+    //adapter.preBindCellBlock = { [weak self] (cell,_,_) in
+        //cell.delegate = self
+    //}
+    //adapter.didSelectedItem = { [weak self] item,index in
+    //}
 {% if model.has_req %}
     loadData(type:.loading)
 {% endif %}
 {% if model.has_refresh %}
-    refreshControl = UIRefreshControl(frame: .zero)
-    refreshControl?.addTarget(self, action: #selector(onRefresh), for: .valueChanged)
+    enableRefreshHeaderView()
 {% endif %}
 {% if model.has_page %}
-    bx_loadMoreControl = loadMoreControl
-    loadMoreControl?.onLoadingHandler = { [unowned self] in
-        self.loadMoreData()
-    }
+    enableLoadMoreFooterView()
 {% endif %}
 
+{% if model.has_right_button %}
+let rightBarButton = UIBarButtonItem(title: i18n("{{model.right_button_title}}"), style: .plain, target: self,
+                            action: #selector(onRightBarButtonPressed))
+navigationItem.rightBarButtonItems = [rightButton]
+{% endif %}
 }
+
+{% if model.has_right_button %}
+    @objc func onRightBarButtonPressed(){
+    }
+{% endif %}
 
 {% if model.has_static_adapter %}
     func onTap(cell:UITableViewCell){
-    switch cell{
-    default:break
-    }
+        switch cell{
+            default:break
+        }
     }
 {% endif %}
 
@@ -154,8 +156,6 @@ navigationItem.title = title
     }
 {% endif %}
 
-
-
 {% if model.has_search %}
 {% endif %}
 {% if model.has_refresh %}
@@ -163,12 +163,19 @@ navigationItem.title = title
         self.refreshData()
     }
 {% endif %}
+
+{% if model.has_page %}
+    override func onLoadMore() {
+        self.loadMoreData()
+    }
+{% endif %}
+
 {% if model.has_req %}
     // MARK: Load Data
     func loadData(type:LoadingType){
         onLoading(type: type)
-        let info = PacketName(userId: Login.current.uid, clubId: clubId)
-        GameService.ReqName(info) { (reqResult) in
+        let req = PacketName(userId: Login.current.uid, clubId: clubId)
+        GameService.ReqName(req) { (reqResult) in
             switch reqResult{
             case .error(let error):
                 self.handleLoadError(error.userReadableDescription)
@@ -182,13 +189,11 @@ navigationItem.title = title
 
 {% if model.has_search_ui %}
     // MARK:Search Support
-    var searchBar:UISearchBar = {
-    let bar = UISearchBar() //
-    bar.showsCancelButton = true
-    bar.placeholder = "搜索"
-{#    bar.backgroundImage = Asset.#}
-    bar.isTranslucent = false
-    return bar
+    lazy var searchBar:UISearchBar = {
+        let bar = UISearchBar() //
+        bar.setupAppDefaultStyle()
+        bar.placeholder = i18n("搜索")
+        return bar
     }()
 {% endif %}
 
@@ -200,9 +205,23 @@ navigationItem.title = title
 {%  if model.has_search_ui %}
 extension {{ model.class_name }}:UISearchBarDelegate{
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        if let text = searchBar.text , !text.isEmpty{
-            search(keyword:text)
+        if let text = searchBar.text, !text.isEmpty{
+            searchData(keyword: text)
         }
+    }
+
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        searchBar.showsCancelButton = true
+    }
+
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        searchBar.showsCancelButton = false
+    }
+
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+        searchBar.text = ""
+        self.refreshData()
     }
 }
 {% endif %}
@@ -233,7 +252,7 @@ extension {{ model.class_name }}:UISearchBarDelegate{
 
     override func viewDidLoad() {
     super.viewDidLoad()
-    title = ""
+    //title = i18n("")
     navigationItem.title = title
     showIndicator = true
 

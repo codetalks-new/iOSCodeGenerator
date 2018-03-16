@@ -51,9 +51,9 @@ class ControllerModel(ViewModel):
     has_search = model_bool_property("search")
     has_primary_action = model_bool_property(["paction","primary_action"]) # primary action
     has_keyboard = model_bool_property(["kb","keyboard"])
-
     has_search_ui = model_bool_property("search_ui")
-
+    has_right_button = model_bool_property("right_button",default=False)
+    init_views = model_bool_property("init_views", default=False)
     is_vc = True
 
     @property
@@ -111,3 +111,7 @@ class ControllerModel(ViewModel):
     @cached_property
     def ui_detail_vc_name(self):
         return self.ui_vc_name_with('Detail')
+
+    @property
+    def right_button_title(self):
+        return self.model_config.get('right_button')

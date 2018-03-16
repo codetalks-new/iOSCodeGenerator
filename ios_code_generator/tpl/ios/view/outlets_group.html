@@ -1,8 +1,10 @@
 var allOutlets :[UIView]{
     return [{{ fields|map(attribute='field_name')|join(',') }}]
 }
+{% if model.group_outlets %}
 {% for grouper,fields in fields|groupby('type_class') %}
 var all{{grouper}}Outlets :[{{grouper}}]{
     return [{{ fields|map(attribute='field_name')|join(',') }}]
 }
 {% endfor %}
+{% endif %}

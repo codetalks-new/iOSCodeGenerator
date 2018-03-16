@@ -88,13 +88,14 @@ class model_bool_property(object):
         if obj is None:
             return self
         config_value = self.default
+        false_literals = ['false','no']
         if isinstance(self.name_or_names, (list, tuple)):
             for name in self.name_or_names:
                 if name in obj.model_config:
-                    config_value = obj.model_config[name] != 'false'
+                    config_value = obj.model_config[name] not in false_literals
         else:
             if self.name_or_names in obj.model_config:
-                config_value = obj.model_config[self.name_or_names] != 'false'
+                config_value = obj.model_config[self.name_or_names] not in false_literals
         return  config_value
 
 

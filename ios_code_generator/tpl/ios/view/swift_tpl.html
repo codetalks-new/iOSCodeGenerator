@@ -21,7 +21,7 @@ final class {{ model.class_name }} : {{ model.superclass }} {{ '' if model.ui_no
 
 {% if 'TableViewCell' in model.superclass %}
     convenience init() {
-    self.init(style: .default, reuseIdentifier: "{{ model.class_name }}Cell")
+    self.init(style: .default, reuseIdentifier: "{{ model.class_name }}")
     }
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
     super.init(style: style, reuseIdentifier: reuseIdentifier)

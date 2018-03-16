@@ -8,6 +8,12 @@ from ios_code_generator.models import Model, Field
 from ios_code_generator.models import model_bool_property
 from ios_code_generator.utils import to_mixed_case, cached_property, to_camel_case
 
+"""
+用于 生成 iOS 代码布局的  Model-Field 组合。
+Model 用于声明整个布局的基本结构和数据。
+Field 用于声明单个的 View .
+"""
+
 __author__ = 'banxi'
 
 class ViewField(Field):
@@ -23,7 +29,6 @@ class ViewField(Field):
 
     @property
     def field_name(self):
-
         pure_type_name = self.type_class.replace('UI', '')
         if not self.type_class.startswith("UI"):
             if self.ftype in ui_field_custom_type_pure_name:
@@ -149,12 +154,14 @@ class ViewField(Field):
 
 @as_ios_swift_generator("view")
 class ViewModel(Model):
-    default_field_type = 'l'
+    default_field_type = 'l' # 默认的类型 `l` 指 `UILabel`
     field_class = ViewField
-    is_autolayout = model_bool_property(['al', 'autolayout'])
+    is_autolayout = model_bool_property(['al', 'autolayout']) # 是否使用使用 AutoLayout 的自定义 View
     has_adapter = model_bool_property('adapter')
     has_static_adapter = model_bool_property('sadapter')
+    group_outlets = model_bool_property('group', default=False)
     no_init = model_bool_property("no_init")
+    init_views = model_bool_property("init_views", default=True)
     is_vc = False
     @property
     def superclass(self):

@@ -4,6 +4,7 @@ super.init(coder: aDecoder)
 }
 {% endif %}
 
+{% if model.init_views %}
 {% include 'ios/view/outlets_group.html' %}
 
 func commonInit(){
@@ -43,3 +44,5 @@ func setupAttrs(){
     {% endif %}
 {% endfor %}
 }
+
+{% endif %}

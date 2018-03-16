@@ -35,7 +35,7 @@ field_pattern = re.compile(r"""
 \s* # optional space
 (?:\((?P<attrs>[\w=,\u4e00-\u9fcc\s]+)\))? # optional attrs
 """,re.VERBOSE)
-model_pattern = re.compile(r'(?P<name>\w+)(?:\((?P<attrs>[\w=,/\s]+)\))?')
+model_pattern = re.compile(r'(?P<name>\w+)(?:\((?P<attrs>[\w=,/\s\u4e00-\u9fcc]+)\))?')
 int_value_pattern = re.compile(r'(?P<value>\d+)')
 
 
