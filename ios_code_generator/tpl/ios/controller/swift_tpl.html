@@ -4,7 +4,6 @@ import BXModel
 import BXiOSUtils
 import Kingfisher
 import BXForm
-import BXLoadMoreControl
 import GameNetClient
 {% set m = model %}
 
@@ -107,6 +106,7 @@ override func viewDidLoad() {
 {% if model.is_tvc %}
     {% if model.has_search_ui %}
         tableView.tableHeaderView = searchBar
+        searchBar.delegate = self
     {% endif %}
 {% endif %}
     //adapter.preBindCellBlock = { [weak self] (cell,_,_) in
@@ -127,7 +127,7 @@ override func viewDidLoad() {
 {% if model.has_right_button %}
 let rightBarButton = UIBarButtonItem(title: i18n("{{model.right_button_title}}"), style: .plain, target: self,
                             action: #selector(onRightBarButtonPressed))
-navigationItem.rightBarButtonItems = [rightButton]
+navigationItem.rightBarButtonItems = [rightBarButton]
 {% endif %}
 }
 
@@ -193,6 +193,7 @@ navigationItem.rightBarButtonItems = [rightButton]
         let bar = UISearchBar() //
         bar.setupAppDefaultStyle()
         bar.placeholder = i18n("搜索")
+        bar.sizeToFit()
         return bar
     }()
 {% endif %}

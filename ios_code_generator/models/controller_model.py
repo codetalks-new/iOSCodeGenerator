@@ -54,6 +54,7 @@ class ControllerModel(ViewModel):
     has_search_ui = model_bool_property("search_ui")
     has_right_button = model_bool_property("right_button",default=False)
     init_views = model_bool_property("init_views", default=False)
+    no_init = model_bool_property("no_init", default=True)
     is_vc = True
 
     @property

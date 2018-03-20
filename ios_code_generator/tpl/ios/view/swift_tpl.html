@@ -36,7 +36,7 @@ final class {{ model.class_name }} : {{ model.superclass }} {{ '' if model.ui_no
 
 {% if model.ui_has_bind %}
     var item:{{ mname }}?
-    func bind(_ item:{{ mname }}){
+    func bind(_ item:{{ mname }},indexPath: IndexPath){
     self.item = item
     {% for field in fields %}
         {% if field.can_bind_value %}
