@@ -123,6 +123,8 @@ ui_controller_model_type_map = {
 ui_field_attr_map = {
     'f': '%UIFont.systemFont(ofSize:%s)',
     'fb': 'UIFont.boldSystemFont(ofSize:%s)',
+    'fp': '+UIFont.systemFont(ofSize:.primaryText)',
+    'fs': '+UIFont.systemFont(ofSize:.secondaryText)',
     'cdg': '+.darkGray',
     'cdt': '+.darkText',
     'cg': '+.gray',

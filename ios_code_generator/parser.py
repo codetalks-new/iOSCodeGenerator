@@ -19,13 +19,13 @@ constraint_config_item_pattern = re.compile(r"""
 (?:@(?P<secondItem>\w+))? # optional secondItem
 """, re.VERBOSE)
 
-''' match `f14`,`color=#fff`,'''
+''' match `f14`,`fp`,`fs`,`color=#fff`,'''
 attr_config_item_pattern = re.compile(r"""
 (?P<ctype>[a-zA-Z]+)  # attr name
 (?:
     (?P<svalue>\d+) # simple number value
     |(?:\s*=\s*(?P<cvalue>[\w\u4e00-\u9fcc]+)) # normal value
-)? # only name is allowed
+)? # only name is allowed like fp,fs
 """, re.VERBOSE)
 
 field_pattern = re.compile(r"""

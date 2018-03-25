@@ -168,7 +168,7 @@ class ConfigItem(object):
             return value
 
     def smart_prop_name(self,field):
-        if self.ctype in ['f','fb']:
+        if self.ctype in ['f','fb','fp','fs','ft']:
             return 'font'
 
         if self.ctype.startswith('c'):
